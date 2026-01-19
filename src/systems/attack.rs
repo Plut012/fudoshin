@@ -187,7 +187,7 @@ pub fn handle_attack_input(
 }
 
 /// Create a hitbox for the given attack type
-fn create_hitbox(attack_type: AttackType) -> Hitbox {
+pub fn create_hitbox(attack_type: AttackType) -> Hitbox {
     match attack_type {
         AttackType::Light => {
             // Light attack: small, fast hitbox in front of character

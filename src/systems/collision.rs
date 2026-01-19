@@ -1,18 +1,18 @@
 use bevy::prelude::*;
 use crate::components::character::Player;
 use crate::components::combat::{Hitbox, Hurtbox};
-use crate::components::state::CharacterState;
+use crate::components::state::{AttackPhase, CharacterState};
 use crate::events::combat_events::HitEvent;
 use crate::systems::evade::EvadeData;
 
 /// Detect collisions between active hitboxes and hurtboxes
 /// Only checks between different players (can't hit yourself)
 pub fn detect_hits(
-    hitbox_query: Query<(Entity, &Hitbox, &GlobalTransform, &Player)>,
+    hitbox_query: Query<(Entity, &Hitbox, &GlobalTransform, &Player, &CharacterState)>,
     hurtbox_query: Query<(Entity, &Hurtbox, &GlobalTransform, &Player, &CharacterState, Option<&EvadeData>)>,
     mut hit_events: EventWriter<HitEvent>,
 ) {
-    for (attacker_entity, hitbox, attacker_transform, attacker_player) in hitbox_query.iter() {
+    for (attacker_entity, hitbox, attacker_transform, attacker_player, attacker_state) in hitbox_query.iter() {
         // Skip if hitbox is not active
         if !hitbox.active {
             continue;
@@ -39,13 +39,31 @@ pub fn detect_hits(
             // AABB collision detection
             if rects_intersect(&hitbox_rect, &hurtbox_rect) {
                 // Hit detected!
-                let mut event = HitEvent::new(attacker_entity, defender_entity, hitbox.damage);
+                // Get attack type from attacker's state
+                let attack_type = if let CharacterState::Attacking { attack_type, .. } = attacker_state {
+                    *attack_type
+                } else {
+                    // Fallback to Light if not in attacking state (shouldn't happen)
+                    crate::components::state::AttackType::Light
+                };
+
+                let mut event = HitEvent::new(attacker_entity, defender_entity, hitbox.damage, attack_type);
+
+                // Check if defender is in startup (vulnerable) - COUNTER HIT!
+                let is_counter_hit = matches!(
+                    defender_state,
+                    CharacterState::Attacking { phase: AttackPhase::Startup, .. }
+                );
 
                 // Check if defender is blocking
                 let is_blocking = matches!(defender_state, CharacterState::Blocking);
 
                 // Check for unblockable property
                 let is_unblockable = hitbox.properties.iter().any(|p| matches!(p, crate::components::combat::AttackProperty::Unblockable));
+
+                if is_counter_hit {
+                    event = event.counter_hit();
+                }
 
                 if is_unblockable {
                     event = event.unblockable();
@@ -54,11 +72,12 @@ pub fn detect_hits(
                 }
 
                 let was_blocked = event.was_blocked;
+                let is_counter = event.counter_hit;
                 hit_events.send(event);
 
                 debug!(
-                    "Hit detected! {:?} hit {:?} for {} damage (blocked: {})",
-                    attacker_player, defender_player, hitbox.damage, was_blocked
+                    "Hit detected! {:?} hit {:?} for {} damage (blocked: {}, counter: {})",
+                    attacker_player, defender_player, hitbox.damage, was_blocked, is_counter
                 );
             }
         }

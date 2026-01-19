@@ -34,13 +34,22 @@ fn main() {
 
 /// Initial scene setup
 fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
+    use components::breath::*;
     use components::character::*;
     use components::combat::*;
     use components::guard::*;
+    use components::health::*;
+    use components::initiative::*;
     use components::state::*;
+    use systems::chain::ChainState;
+    use systems::momentum::Momentum;
+    use systems::pressure::Pressure;
 
     // Lock to 60 FPS
     framepace.limiter = Limiter::from_framerate(60.0);
+
+    // Initialize match state (starts with countdown)
+    commands.insert_resource(MatchState::default());
 
     // Camera
     commands.spawn(Camera2dBundle::default());
@@ -65,6 +74,12 @@ fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
         Velocity::default(),
         Hurtbox::default(),  // Phase 2: Add hurtbox for collision
         GuardMeter::default(), // Phase 2: Add guard meter
+        Initiative::default(), // Phase 3: Add initiative tracking
+        Pressure::default(),   // Phase 3: Add pressure tracking
+        ChainState::default(), // Phase 3: Add chain tracking
+        Momentum::default(),   // Phase 3: Add momentum tracking
+        Health::default(),     // Phase 4: Add health tracking
+        Breath::default(),     // Phase 4: Add breath tracking
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.9, 0.2, 0.2),  // Red
@@ -85,6 +100,12 @@ fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
         Velocity::default(),
         Hurtbox::default(),  // Phase 2: Add hurtbox for collision
         GuardMeter::default(), // Phase 2: Add guard meter
+        Initiative::default(), // Phase 3: Add initiative tracking
+        Pressure::default(),   // Phase 3: Add pressure tracking
+        ChainState::default(), // Phase 3: Add chain tracking
+        Momentum::default(),   // Phase 3: Add momentum tracking
+        Health::default(),     // Phase 4: Add health tracking
+        Breath::default(),     // Phase 4: Add breath tracking
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.2, 0.4, 0.9),  // Blue

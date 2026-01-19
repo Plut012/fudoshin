@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::components::state::AttackType;
 
 /// Event fired when an attack hits a hurtbox
 #[derive(Event, Debug, Clone)]
@@ -9,20 +10,26 @@ pub struct HitEvent {
     pub defender: Entity,
     /// Amount of damage
     pub damage: u8,
+    /// Type of attack
+    pub attack_type: AttackType,
     /// Whether the hit was blocked
     pub was_blocked: bool,
     /// Properties of the attack
     pub unblockable: bool,
+    /// Whether this was a counter hit (hit during startup)
+    pub counter_hit: bool,
 }
 
 impl HitEvent {
-    pub fn new(attacker: Entity, defender: Entity, damage: u8) -> Self {
+    pub fn new(attacker: Entity, defender: Entity, damage: u8, attack_type: AttackType) -> Self {
         Self {
             attacker,
             defender,
             damage,
+            attack_type,
             was_blocked: false,
             unblockable: false,
+            counter_hit: false,
         }
     }
 
@@ -33,6 +40,11 @@ impl HitEvent {
 
     pub fn unblockable(mut self) -> Self {
         self.unblockable = true;
+        self
+    }
+
+    pub fn counter_hit(mut self) -> Self {
+        self.counter_hit = true;
         self
     }
 }

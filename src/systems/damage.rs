@@ -16,24 +16,42 @@ pub fn apply_hit_reactions(
 
         // Apply hitstun to defender
         if let Ok((mut state, mut sprite, player)) = query.get_mut(event.defender) {
-            // Enter stagger state (brief hitstun)
-            let hitstun_frames = match event.damage {
+            // Base hitstun
+            let base_hitstun = match event.damage {
                 1 => 15, // Light attack: 15 frames (~0.25 seconds)
                 2 => 25, // Heavy attack: 25 frames (~0.42 seconds)
                 _ => 20, // Default
+            };
+
+            // Counter hit bonus: +10 frames
+            let hitstun_frames = if event.counter_hit {
+                base_hitstun + 10
+            } else {
+                base_hitstun
             };
 
             *state = CharacterState::Staggered {
                 frames_remaining: hitstun_frames,
             };
 
-            // Visual feedback: flash red briefly
-            sprite.color = Color::srgb(1.0, 0.3, 0.3);
+            // Visual feedback: gold for counter hit, red for normal hit
+            sprite.color = if event.counter_hit {
+                Color::srgb(1.0, 0.85, 0.0) // Gold/yellow for counter hit
+            } else {
+                Color::srgb(1.0, 0.3, 0.3) // Red for normal hit
+            };
 
-            info!(
-                "HIT! Player {:?} took {} damage ({} frames hitstun)",
-                player, event.damage, hitstun_frames
-            );
+            if event.counter_hit {
+                info!(
+                    "COUNTER HIT! Player {:?} took {} damage ({} frames hitstun)",
+                    player, event.damage, hitstun_frames
+                );
+            } else {
+                info!(
+                    "HIT! Player {:?} took {} damage ({} frames hitstun)",
+                    player, event.damage, hitstun_frames
+                );
+            }
         }
     }
 }

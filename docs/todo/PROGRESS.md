@@ -147,18 +147,107 @@ cargo run
 
 ---
 
-## 🎯 Next: Phase 3 - Initiative & Pressure
+## ✅ Phase 3: Initiative & Pressure (COMPLETE)
 
-**What it adds:**
-1. **Initiative System**: Frame advantage/disadvantage tracking
-2. **Pressure States**: Being "plus" gives offensive bonus
-3. **Momentum**: Winning exchanges builds momentum
-4. **Chain Attacks**: Cancel Light into Light on hit
-5. **Counter Hits**: Extra damage/hitstun when hitting startup
+**What's working:**
 
-**After Phase 3:** Health States (Whole → Cut → Wounded → Broken) and Breath system
+### ✅ Initiative System (Frame Advantage)
+- Tracks +/- frames after interactions
+- **Light attack hit**: +4f advantage / -4f disadvantage
+- **Heavy attack hit**: +6f advantage / -6f disadvantage
+- **Parry success**: +12f advantage / -12f disadvantage
+- **On block**: Varies by attack (-2f to +8f)
+- Visual: Green up arrow (advantage) / Red down arrow (disadvantage)
+- Ticks down each frame automatically
+
+### ✅ Pressure System
+- Tracks offensive momentum with 0-3 intensity levels
+- **Build pressure**: On hit, counter hit, or chain attack
+- **Pressure bonuses**:
+  - Level 1: +5% movement speed
+  - Level 2: +10% movement speed, -1f attack startup
+  - Level 3: +15% movement speed, -2f attack startup
+- **Decay**: Passive drain when not attacking
+- Visual: Character glows brighter at higher pressure levels
+
+### ✅ Chain Attack System
+- **Light → Light cancels**: Cancel recovery into new Light on hit
+- **Chain window**: 7 frames during recovery phase
+- **Max chains**: Up to 2-hit combo
+- **Not chainable on block**: Only successful hits enable chaining
+- Visual: Yellow circle indicator during chain window
+- Integrates with pressure system for combo momentum
+
+### ✅ Counter Hit System
+- **Detects hits during startup**: Opponent vulnerable in attack startup
+- **Bonus hitstun**: +10 frames on counter hit
+  - Light counter hit: 25f hitstun (vs 15f normal)
+  - Heavy counter hit: 35f hitstun (vs 25f normal)
+- Visual: Gold/yellow flash (vs red for normal hit)
+- Console logging: "COUNTER HIT!" message
+
+### ✅ Momentum System
+- **Tracks win streaks**: Levels 0-5 based on consecutive successes
+- **Gain momentum**: On hits, chains, parries (double gain)
+- **Lose momentum**: When hit or after inactivity
+- **Bonuses at level 3+**:
+  - Level 3: +10% damage, +20% guard damage
+  - Level 4: +15% damage, +30% guard damage
+  - Level 5: +25% damage, +50% guard damage
+- **Decay**: Starts after 2 seconds of inactivity
+- Visual: Expanding colored rings (green→cyan→gold)
 
 ---
 
-Last updated: Phase 2 complete!
-Status: Full combat triangle working - attacks, defense, parry, evade all functional
+## System Integration Notes
+
+**Phase 3 systems work together:**
+- Counter hit → Extra initiative advantage → Build pressure faster
+- Pressure + Initiative → Chain window opportunities
+- Successful chains → Build momentum
+- High momentum → More damage → Easier to maintain pressure
+
+**System execution order (per frame):**
+1. Input & movement processing
+2. State progression (initiative tick, momentum decay)
+3. Physics & collision detection
+4. Reactions (hit application, initiative/pressure/momentum changes)
+5. Visual feedback (gizmos for all systems)
+6. Debug logging
+
+---
+
+## 🎯 Next: Phase 4 - Health States & Breath System
+
+**What it adds:**
+1. **Health System**:
+   - Whole → Cut → Wounded → Broken states
+   - State-based modifiers (speed, frame advantage, parry window)
+   - Numerical damage with momentum bonuses
+   - Chip damage on blocked attacks
+2. **Breath System**:
+   - 3 breaths (stocks) per match
+   - Round structure with respawns
+   - Round timer (60 seconds)
+3. **Decisive Blow**:
+   - Finishing move against Broken opponents
+   - Instant breath loss on Heavy/Grab connect
+   - Special visual effects
+4. **Win Conditions**:
+   - Breath depletion (primary)
+   - Timeout (discouraged)
+   - Match victory screen
+5. **UI Elements**:
+   - Breath indicators
+   - Health bars with color coding
+   - Round timer
+   - Danger indicators
+
+**After Phase 4:** This completes the MVP! Game will be fully playable with complete match structure.
+
+See `docs/todo/PHASE4_PLAN.md` for detailed implementation plan.
+
+---
+
+Last updated: Phase 3 complete, Phase 4 planned!
+Status: Full initiative, pressure, chains, counter hits, and momentum systems working. Ready to implement health and breath systems.
