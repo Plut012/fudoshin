@@ -7,4 +7,5 @@ pub mod combat;
 pub mod guard;
 pub mod health;
 pub mod initiative;
+pub mod movelist;
 pub mod state;

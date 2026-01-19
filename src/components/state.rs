@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 /// Type of attack being performed
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AttackType {
     Light,
     Heavy,
@@ -19,6 +19,8 @@ pub enum AttackPhase {
     Recovery,
 }
 
+use crate::components::movelist::AttackDirection;
+
 /// Character state machine
 #[derive(Component, Debug, Clone, PartialEq, Eq)]
 pub enum CharacterState {
@@ -29,6 +31,7 @@ pub enum CharacterState {
     /// Performing an attack
     Attacking {
         attack_type: AttackType,
+        direction: AttackDirection,
         phase: AttackPhase,
     },
     /// Holding block

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use crate::components::character::Player;
+use crate::components::movelist::AttackDirection;
 use crate::components::state::{AttackPhase, AttackType, CharacterState, StateTimer};
 use crate::events::combat_events::HitEvent;
 use crate::systems::input::CurrentInputs;
@@ -54,7 +55,7 @@ pub fn mark_chainable_on_hit(
 
         // Check if attacker is in a Light attack
         if let Ok((mut chain_state, state)) = query.get_mut(event.attacker) {
-            if let CharacterState::Attacking { attack_type, phase } = state {
+            if let CharacterState::Attacking { attack_type, phase, .. } = state {
                 if *attack_type == AttackType::Light && *phase == AttackPhase::Active {
                     // Hit landed! Can chain
                     chain_state.can_chain = true;
@@ -72,7 +73,7 @@ pub fn manage_chain_window(
 ) {
     for (mut chain_state, state, timer) in query.iter_mut() {
         match state {
-            CharacterState::Attacking { attack_type, phase } => {
+            CharacterState::Attacking { attack_type, phase, .. } => {
                 if *attack_type == AttackType::Light && *phase == AttackPhase::Recovery {
                     // In recovery phase - check if in chain window (frames 0-7 of 10f recovery)
                     if let Some(timer) = timer {
@@ -106,9 +107,13 @@ pub fn manage_chain_window(
 pub fn handle_chain_input(
     mut commands: Commands,
     inputs: Res<CurrentInputs>,
-    mut query: Query<(Entity, &Player, &mut CharacterState, &mut ChainState, &mut StateTimer)>,
+    mut query: Query<(Entity, &Player, &mut CharacterState, &mut ChainState, Option<&mut StateTimer>)>,
 ) {
-    for (entity, player, mut state, mut chain_state, mut timer) in query.iter_mut() {
+    for (entity, player, mut state, mut chain_state, timer) in query.iter_mut() {
+        // Skip if no timer (shouldn't happen during chain windows, but be safe)
+        let Some(mut timer) = timer else {
+            continue;
+        };
         // Check if can chain
         if !chain_state.can_continue_chain() {
             continue;
@@ -130,11 +135,12 @@ pub fn handle_chain_input(
             // Cancel into new Light attack
             *state = CharacterState::Attacking {
                 attack_type: AttackType::Light,
+                direction: AttackDirection::Neutral,
                 phase: AttackPhase::Startup,
             };
 
-            // Reset timer for new attack startup (6f)
-            timer.reset(6);
+            // Reset timer for new attack startup (5f - reduced for responsiveness)
+            timer.reset(5);
 
             info!(
                 "Player {:?} CHAIN CANCEL! Chain count: {}",

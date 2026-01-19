@@ -26,6 +26,7 @@ impl Plugin for CoreGamePlugin {
                 // Input and movement
                 input::update_inputs,
                 movement::process_movement_input,
+                movement::handle_dash_input,        // Dash input handling
                 attack::handle_attack_input,
                 guard::handle_block_input,
                 evade::handle_evade_input,
@@ -40,13 +41,18 @@ impl Plugin for CoreGamePlugin {
                 guard::progress_stagger,
                 guard::progress_parry,
                 evade::progress_evade,
+                movement::tick_dash_cooldown,      // Dash cooldown
                 initiative::tick_initiative,
                 momentum::tick_momentum,
                 chain::manage_chain_window,
                 attack::activate_hitboxes,
+                movement::initiate_attack_movement, // Phase 4.5: Start attack movement
+                movement::cleanup_attack_movement,  // Phase 4.5: Clean up finished movement
             ).chain())
             .add_systems(Update, (
                 // Physics and collision
+                movement::apply_dash_movement,      // Apply dash movement
+                movement::apply_attack_movement,    // Phase 4.5: Apply attack-based movement
                 movement::apply_velocity,
                 movement::clamp_to_stage,
                 collision::detect_hits,
@@ -82,6 +88,7 @@ impl Plugin for CoreGamePlugin {
             .add_systems(Update, (
                 // Visual feedback
                 attack::visualize_attack_phases,
+                attack::visualize_attack_direction,  // Phase 4.5: Show attack direction
                 guard::visualize_blocking,
                 guard::parry_flash_effect,
                 damage::hit_flash_feedback,
@@ -93,6 +100,7 @@ impl Plugin for CoreGamePlugin {
                 ui::render_round_text_indicator, // Phase 4: Round text
                 evade::visualize_evade,
                 evade::cleanup_evade_visuals,
+                movement::visualize_dash_cooldown, // Dash cooldown indicator
                 initiative::visualize_initiative,
                 pressure::visualize_pressure,
                 momentum::visualize_momentum,

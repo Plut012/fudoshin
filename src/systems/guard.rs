@@ -208,12 +208,8 @@ pub fn visualize_blocking(
 
         match state {
             CharacterState::Blocking => {
-                // Darker when blocking
-                sprite.color = Color::srgb(
-                    base_color.to_srgba().red * 0.5,
-                    base_color.to_srgba().green * 0.5,
-                    base_color.to_srgba().blue * 0.5,
-                );
+                // Silver/white when blocking
+                sprite.color = Color::srgb(0.85, 0.85, 0.9);  // Bright silver
             }
             CharacterState::Parrying { .. } => {
                 // Bright cyan when parrying (high risk/reward)

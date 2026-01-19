@@ -40,6 +40,7 @@ fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
     use components::guard::*;
     use components::health::*;
     use components::initiative::*;
+    use components::movelist::*;
     use components::state::*;
     use systems::chain::ChainState;
     use systems::momentum::Momentum;
@@ -80,6 +81,7 @@ fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
         Momentum::default(),   // Phase 3: Add momentum tracking
         Health::default(),     // Phase 4: Add health tracking
         Breath::default(),     // Phase 4: Add breath tracking
+        Movelist::default(),   // Phase 4.5: Add movelist (directional attacks)
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.9, 0.2, 0.2),  // Red
@@ -106,6 +108,7 @@ fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
         Momentum::default(),   // Phase 3: Add momentum tracking
         Health::default(),     // Phase 4: Add health tracking
         Breath::default(),     // Phase 4: Add breath tracking
+        Movelist::default(),   // Phase 4.5: Add movelist (directional attacks)
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.2, 0.4, 0.9),  // Blue
