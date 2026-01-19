@@ -9,17 +9,6 @@
 - Inspector tools configured (F1 to toggle)
 - 60 FPS frame pacing locked
 
-**Repository structure:**
-```
-src/
-├── components/   # Pure data, no logic
-├── systems/      # Each system = one responsibility
-├── resources/    # Global state
-├── events/       # Decoupled communication
-├── data/         # Data structure definitions
-└── plugins/      # Grouped systems
-```
-
 ---
 
 ## ✅ Phase 1: Movement Foundation (COMPLETE)
@@ -33,135 +22,143 @@ src/
 - ✅ State machine (Idle ↔ Walking)
 - ✅ Frame-perfect input processing
 
-**Implementation details:**
-- **Input system:** Resource-based (`CurrentInputs`) updated every frame
-- **Movement system:** Chain of systems in correct order:
-  1. Read inputs
-  2. Process into velocities
-  3. Update state machine
-  4. Apply physics
-  5. Enforce boundaries
+---
 
-**Test results:**
-- Movement crosses stage in ~2 seconds ✓
-- Characters stop immediately on input release (responsive) ✓
-- State transitions visible in inspector ✓
+## ✅ Phase 2: Core Combat Triangle (COMPLETE)
 
-**Code quality:**
-- All systems have single responsibility
-- Clear, descriptive function names
-- Proper use of Bevy's ECS patterns
-- No hidden state or coupling
+**What's working:**
+
+### ✅ Hitbox/Hurtbox System
+- AABB collision detection
+- Active hitboxes vs hurtboxes
+- Debug visualization (F1 to see boxes)
+- World-space positioning
+
+### ✅ Attack System (All 3 Types)
+- **Light Attack** (J / Numpad1): 6f startup, 2f active, 10f recovery
+  - Small hitbox, 1 damage, -2f on block
+  - 15 frames hitstun on hit
+- **Heavy Attack** (K / Numpad2): 14f startup, 4f active, 18f recovery
+  - Large hitbox, 2 damage, -8f on block
+  - Light Armor property (absorbs one Light)
+  - 25 frames hitstun on hit
+- **Grab** (L / Numpad3): 10f startup, 2f active, 20f recovery
+  - Short range, Unblockable property
+  - Beats blocking opponents
+
+### ✅ Block & Guard System
+- **Block** (I / Numpad0): Hold to block attacks
+- **Guard Meter**: Fills when blocking, drains passively
+  - Light blocked: +15% guard
+  - Heavy blocked: +35% guard
+  - Drain: -5% per second
+- **Guard Break**: Meter full → 40 frame stagger
+- **Visual feedback**: Darken when blocking, gray when staggered
+
+### ✅ Hit Reactions
+- Hitstun on successful hits (can't act during)
+- Red flash visual feedback
+- Console logging for debugging
+- Stagger state locks out actions
+
+### ✅ Parry System
+- **Parry** (Tap I / Numpad0): 6f active window
+- Success: Attacker staggers 20f, defender can act immediately
+- Restores 25% guard meter on success
+- Visual: Bright cyan during window, white flash on success
+- High risk, high reward
+
+### ✅ Evade System
+- **Evade** (Shift + Direction): Quick dash with i-frames
+- 3f startup, 4f invincibility, 8f recovery (15f total)
+- Fast movement (500 units/sec) in any direction
+- Visual: Semi-transparent (50% during i-frames, 70% otherwise)
+- Invincible during i-frame window
 
 ---
 
-## 🚧 Next: Phase 2 - Core Combat Triangle
+## Controls
 
-**Upcoming implementation:**
-- Hitbox/hurtbox system
-- Attack states (startup, active, recovery)
-- Light and Heavy attacks
-- Block and Guard meter
-- Parry system
-- Grab and Evade
-- Frame data enforcement
+**Player 1:**
+- WASD - Movement
+- J - Light Attack
+- K - Heavy Attack
+- L - Grab
+- I - Block/Parry (tap for parry)
+- Shift + Direction - Evade
 
-**Foundation is solid:** Data-driven architecture makes adding combat straightforward.
+**Player 2:**
+- Arrow Keys - Movement
+- Numpad 1 - Light Attack
+- Numpad 2 - Heavy Attack
+- Numpad 3 - Grab
+- Numpad 0 - Block/Parry (tap for parry)
+- Right Shift + Direction - Evade
+
+**Debug:**
+- F1 - Toggle inspector (see hitboxes, components)
 
 ---
 
-## How to Run
+## Combat Triangle Status
+
+✅ **Attack > Grab** - Attacks stuff grab startup
+✅ **Grab > Block** - Unblockable property works
+✅ **Block > Attack** - Guard meter fills, eventually breaks
+✅ **Hits apply hitstun** - Red flash, can't act
+✅ **Parry beats Attack** - 6f window, attacker staggers
+✅ **Evade beats everything** - 4f i-frames dodge all attacks
+
+---
+
+## How to Test
 
 ```bash
-# Compile and run
 cargo run
-
-# Fast check (no run)
-cargo check
-
-# Release build
-cargo run --release
 ```
 
-**Controls:**
-- **Player 1:** WASD to move, JKL for actions
-- **Player 2:** Arrow keys to move, Numpad 1/2/3 for actions
-- **F1:** Toggle inspector (see components live)
+1. Move characters close together (WASD / Arrows)
+2. Press J to Light attack - see white flash, red hitbox
+3. Hit connects - opponent flashes red, frozen briefly
+4. Hold I to block - character darkens
+5. Block 3-4 attacks - guard breaks, gray stagger
+6. Press L (Grab) against blocking opponent - breaks through!
 
 ---
 
 ## Architecture Highlights
 
-### Input System (`src/systems/input.rs`)
-- Clean separation per player
-- Single resource holds all inputs
-- Easy to extend for gamepad support
+**Systems organized into groups:**
+1. Input & movement processing
+2. State progression (attack phases, stagger)
+3. Physics & collision detection
+4. Reactions (damage, guard, hitstun)
+5. Visual feedback
+6. Debug visualization
 
-### Movement System (`src/systems/movement.rs`)
-- `process_movement_input`: Input → Velocity
-- `update_movement_state`: Velocity → State
-- `apply_velocity`: Velocity → Transform
-- `clamp_to_stage`: Transform boundary enforcement
-
-Each system does ONE thing. Easy to debug, test, and extend.
-
-### Plugin Organization (`src/plugins/core_game.rs`)
-- Systems chained in correct order
-- Resources initialized automatically
-- Clear comments showing execution flow
-
----
-
-## What Makes This Implementation Clean
-
-1. **Data-driven:** Game config lives in `assets/data/game_config.ron`
-2. **ECS patterns:** Components have no methods, systems operate on queries
-3. **Single responsibility:** Each system has one job with a clear name
-4. **Type safety:** Rust prevents entire classes of bugs
-5. **Composable:** Easy to add characters, moves, mechanics without touching core systems
-
-The codebase reads like the design document.
+**Key files:**
+- `src/systems/attack.rs` - Attack input, phase progression, hitbox activation
+- `src/systems/collision.rs` - Hitbox/hurtbox detection, HitEvent emission
+- `src/systems/damage.rs` - Hit reactions, hitstun application
+- `src/systems/guard.rs` - Block, guard meter, guard break
+- `src/components/state.rs` - CharacterState enum, AttackData
+- `src/components/combat.rs` - Hitbox, Hurtbox, AttackProperty
+- `src/events/combat_events.rs` - HitEvent, GuardBreakEvent, etc.
 
 ---
 
-## Performance
+## 🎯 Next: Phase 3 - Initiative & Pressure
 
-- **60 FPS locked** via bevy_framepace
-- **Frame-perfect timing** for fighting game precision
-- **Hot reload ready** (will be enabled in Phase 2)
-- **Dynamic linking** for fast compilation during development
+**What it adds:**
+1. **Initiative System**: Frame advantage/disadvantage tracking
+2. **Pressure States**: Being "plus" gives offensive bonus
+3. **Momentum**: Winning exchanges builds momentum
+4. **Chain Attacks**: Cancel Light into Light on hit
+5. **Counter Hits**: Extra damage/hitstun when hitting startup
 
----
-
-## Lessons from Phase 1
-
-**What worked well:**
-- Starting with rectangles (perfect for testing movement feel)
-- Resource-based input (simple, effective)
-- Chained systems (clear execution order)
-- Inspector for debugging (seeing state changes live is invaluable)
-
-**Confirmed decisions:**
-- Bevy's ECS is excellent for fighting games
-- Data-driven approach will pay off as we add characters
-- Movement feels responsive and snappy (goal achieved)
+**After Phase 3:** Health States (Whole → Cut → Wounded → Broken) and Breath system
 
 ---
 
-## Next Session: Phase 2
-
-**Priority:** Implement the core combat triangle so players can attack and defend.
-
-**Systems to build:**
-1. Collision detection (hitbox/hurtbox)
-2. Attack system (frame data enforcement)
-3. Defense system (block/parry/evade)
-4. Guard meter system
-5. Hit events for decoupled communication
-
-**Estimated:** 2-3 hours for complete Phase 2 implementation.
-
----
-
-Last updated: Phase 1 complete
-Status: Ready for combat mechanics
+Last updated: Phase 2 complete!
+Status: Full combat triangle working - attacks, defense, parry, evade all functional

@@ -1,8 +1,10 @@
 use bevy::prelude::*;
-use crate::systems::{input, movement};
+use crate::events::combat_events::*;
+use crate::systems::{attack, collision, damage, evade, guard, input, movement};
 
 /// Core game plugin - manages fundamental game systems
 /// Phase 1: Movement and input handling
+/// Phase 2: Combat and collision detection
 pub struct CoreGamePlugin;
 
 impl Plugin for CoreGamePlugin {
@@ -11,25 +13,60 @@ impl Plugin for CoreGamePlugin {
             // Resources
             .init_resource::<input::CurrentInputs>()
 
-            // Systems - order matters for frame-perfect timing
+            // Events
+            .add_event::<HitEvent>()
+            .add_event::<ParryEvent>()
+            .add_event::<GuardBreakEvent>()
+            .add_event::<GrabEvent>()
+
+            // Systems - split into groups due to Bevy tuple limits
             .add_systems(Update, (
-                // 1. Read inputs first
+                // Input and movement
                 input::update_inputs,
-
-                // 2. Process inputs into game actions
                 movement::process_movement_input,
-
-                // 3. Update state machine
+                attack::handle_attack_input,
+                guard::handle_block_input,
+                evade::handle_evade_input,
                 movement::update_movement_state,
-
-                // 4. Apply physics
+            ).chain())
+            .add_systems(Update, (
+                // State progression
+                attack::progress_attack_phases,
+                guard::progress_stagger,
+                guard::progress_parry,
+                evade::progress_evade,
+                attack::activate_hitboxes,
+            ).chain())
+            .add_systems(Update, (
+                // Physics and collision
                 movement::apply_velocity,
-
-                // 5. Enforce constraints
                 movement::clamp_to_stage,
-
-                // Debug (runs independently)
+                collision::detect_hits,
+            ).chain())
+            .add_systems(Update, (
+                // Reactions
+                guard::check_parry_success,
+                damage::apply_hit_reactions,
+                guard::fill_guard_on_block,
+                guard::check_guard_break,
+                guard::drain_guard_meter,
+            ).chain())
+            .add_systems(Update, (
+                // Visual feedback
+                attack::visualize_attack_phases,
+                guard::visualize_blocking,
+                guard::parry_flash_effect,
+                damage::hit_flash_feedback,
+                evade::visualize_evade,
+                evade::cleanup_evade_visuals,
+            ))
+            .add_systems(Update, (
+                // Debug
                 movement::debug_character_state,
-            ).chain());  // Chain ensures proper execution order
+                attack::debug_attack_state,
+                guard::debug_guard_meter,
+                damage::debug_hit_events,
+                collision::debug_draw_boxes,
+            ));
     }
 }

@@ -6,14 +6,23 @@ use crate::systems::input::CurrentInputs;
 const STAGE_WIDTH: f32 = 1000.0;
 const STAGE_HALF_WIDTH: f32 = STAGE_WIDTH / 2.0;
 
+use crate::systems::evade::EvadeData;
+
 /// Process player inputs and update velocities
 pub fn process_movement_input(
     inputs: Res<CurrentInputs>,
-    mut query: Query<(&Player, &mut Velocity, &MaxSpeed, &CharacterState)>,
+    mut query: Query<(&Player, &mut Velocity, &MaxSpeed, &CharacterState, Option<&EvadeData>)>,
 ) {
-    for (player, mut velocity, max_speed, state) in query.iter_mut() {
+    for (player, mut velocity, max_speed, state, evade_data) in query.iter_mut() {
+        // Don't override evade movement
+        if evade_data.is_some() {
+            continue;
+        }
+
         // Only allow movement in Idle or Walking states
+        // Can't move while attacking, blocking, parrying, or staggered
         if !matches!(state, CharacterState::Idle | CharacterState::Walking) {
+            velocity.0.x = 0.0; // Stop moving
             continue;
         }
 

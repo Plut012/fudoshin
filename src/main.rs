@@ -35,6 +35,8 @@ fn main() {
 /// Initial scene setup
 fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
     use components::character::*;
+    use components::combat::*;
+    use components::guard::*;
     use components::state::*;
 
     // Lock to 60 FPS
@@ -61,6 +63,8 @@ fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
         CharacterState::Idle,
         MaxSpeed(300.0),
         Velocity::default(),
+        Hurtbox::default(),  // Phase 2: Add hurtbox for collision
+        GuardMeter::default(), // Phase 2: Add guard meter
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.9, 0.2, 0.2),  // Red
@@ -79,6 +83,8 @@ fn setup(mut commands: Commands, mut framepace: ResMut<FramepaceSettings>) {
         CharacterState::Idle,
         MaxSpeed(300.0),
         Velocity::default(),
+        Hurtbox::default(),  // Phase 2: Add hurtbox for collision
+        GuardMeter::default(), // Phase 2: Add guard meter
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.2, 0.4, 0.9),  // Blue
