@@ -12,28 +12,14 @@ pub fn handle_block_input(
     mut query: Query<(Entity, &Player, &mut CharacterState)>,
 ) {
     for (entity, player, mut state) in query.iter_mut() {
-        // Can only block/parry from Idle or Walking states
-        let can_block = matches!(*state, CharacterState::Idle | CharacterState::Walking);
-
-        if !can_block {
-            continue;
-        }
-
         // Get input for this player
         let input = match player {
             Player::One => &inputs.player_one,
             Player::Two => &inputs.player_two,
         };
 
-        // Check for parry attempt (tap block - just_pressed would be detected in input.rs)
-        // For now, we'll use a simple heuristic: if block is pressed while in Idle/Walking,
-        // and it's a new press, initiate parry. If held, transition to blocking.
-
-        // Note: The input system tracks 'block' as pressed state. We need just_pressed.
-        // For parry vs block distinction, we'll need to track press duration.
-        // Simple approach: always start with parry attempt, timeout to block if held.
-
         if input.block {
+            // Can only INITIATE block/parry from Idle or Walking states
             match *state {
                 CharacterState::Idle | CharacterState::Walking => {
                     // Start parry attempt (2f startup, 6f active window)
@@ -41,16 +27,25 @@ pub fn handle_block_input(
                     commands.entity(entity).insert(StateTimer::new(2)); // 2f startup
                     info!("Player {:?} attempting parry", player);
                 }
-                CharacterState::Parrying { .. } => {
-                    // Already parrying, do nothing
+                CharacterState::Parrying { .. } | CharacterState::Blocking => {
+                    // Already blocking/parrying, do nothing
                 }
                 _ => {}
             }
         } else {
-            // Block released
-            if matches!(*state, CharacterState::Blocking) {
-                *state = CharacterState::Idle;
-                debug!("Player {:?} stopped blocking", player);
+            // Block released - can happen from any state
+            match *state {
+                CharacterState::Blocking => {
+                    *state = CharacterState::Idle;
+                    info!("Player {:?} stopped blocking", player);
+                }
+                CharacterState::Parrying { .. } => {
+                    // Released during parry window - failed parry
+                    *state = CharacterState::Idle;
+                    commands.entity(entity).remove::<StateTimer>();
+                    info!("Player {:?} cancelled parry", player);
+                }
+                _ => {}
             }
         }
     }
@@ -140,18 +135,32 @@ pub fn progress_stagger(
 /// Progress parry window (startup then active window)
 pub fn progress_parry(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut CharacterState, Option<&mut StateTimer>)>,
+    inputs: Res<CurrentInputs>,
+    mut query: Query<(Entity, &Player, &mut CharacterState, Option<&mut StateTimer>)>,
 ) {
-    for (entity, mut state, timer) in query.iter_mut() {
+    for (entity, player, mut state, timer) in query.iter_mut() {
         if let CharacterState::Parrying { frames_remaining } = &mut *state {
             // Tick down active window
             if *frames_remaining > 0 {
                 *frames_remaining -= 1;
             } else {
-                // Parry window expired, failed parry
-                *state = CharacterState::Idle;
-                commands.entity(entity).remove::<StateTimer>();
-                debug!("Parry window expired, returning to Idle");
+                // Parry window expired - check if block is still held
+                let input = match player {
+                    Player::One => &inputs.player_one,
+                    Player::Two => &inputs.player_two,
+                };
+
+                if input.block {
+                    // Block still held, transition to Blocking
+                    *state = CharacterState::Blocking;
+                    commands.entity(entity).remove::<StateTimer>();
+                    info!("Player {:?} transitioned to Blocking", player);
+                } else {
+                    // Block released, failed parry
+                    *state = CharacterState::Idle;
+                    commands.entity(entity).remove::<StateTimer>();
+                    debug!("Parry window expired, returning to Idle");
+                }
             }
         }
     }

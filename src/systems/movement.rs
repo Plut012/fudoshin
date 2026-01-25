@@ -24,7 +24,10 @@ pub fn process_movement_input(
         // Only allow movement in Idle or Walking states
         // Can't move while attacking, blocking, parrying, or staggered
         if !matches!(state, CharacterState::Idle | CharacterState::Walking) {
-            velocity.0.x = 0.0; // Stop moving
+            // Only set velocity to 0 if it's not already 0 (avoid triggering change detection)
+            if velocity.0.x != 0.0 {
+                velocity.0.x = 0.0;
+            }
             continue;
         }
 

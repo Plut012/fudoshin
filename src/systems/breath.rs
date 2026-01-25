@@ -9,7 +9,6 @@ pub fn check_decisive_blow(
     mut hit_events: EventReader<HitEvent>,
     mut round_end_events: EventWriter<RoundEndEvent>,
     health_query: Query<&Health>,
-    mut breath_query: Query<&mut Breath>,
 ) {
     for event in hit_events.read() {
         // Skip if hit was blocked
@@ -47,21 +46,11 @@ pub fn check_decisive_blow(
         // ALL CONDITIONS MET - DECISIVE BLOW!
         info!("DECISIVE BLOW! {:?} defeated with {:?}", event.attack_type, defender_health.state);
 
-        // Remove breath from defender
-        if let Ok(mut breath) = breath_query.get_mut(event.defender) {
-            breath.lose_breath();
-
-            info!(
-                "Breath lost! Remaining: {}/{}",
-                breath.current, breath.max
-            );
-
-            // Trigger round end event
-            round_end_events.send(RoundEndEvent {
-                winner: event.attacker,
-                reason: RoundEndReason::DecisiveBlow,
-            });
-        }
+        // Trigger round end event (breath loss handled by handle_round_end)
+        round_end_events.send(RoundEndEvent {
+            winner: event.attacker,
+            reason: RoundEndReason::DecisiveBlow,
+        });
     }
 }
 
