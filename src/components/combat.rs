@@ -91,7 +91,7 @@ impl Hurtbox {
 
 impl Default for Hurtbox {
     fn default() -> Self {
-        // Default hurtbox for character body
-        Self::new(Rect::from_center_size(Vec2::ZERO, Vec2::new(60.0, 120.0)))
+        // Default hurtbox for character body (scaled with character size)
+        Self::new(Rect::from_center_size(Vec2::ZERO, Vec2::new(100.0, 200.0)))
     }
 }

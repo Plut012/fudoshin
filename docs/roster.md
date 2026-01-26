@@ -1,574 +1,392 @@
-# Fudoshin — Character Roster
+# Fudoshin Roster
+
+*10 fighters for the initial release*
 
 ---
 
-## Design Philosophy
+## Setting Context
 
-Every character embodies a different relationship to fudoshin — the immovable mind. They are not "good" and "evil" or "fast" and "slow" archetypes. They are different *philosophies of combat* made playable.
+The world exists in a state of uneasy peace after a century of fragmented wars. The old empires have collapsed into city-states, trade guilds, and wandering factions. Violence is common but small-scale — duels, mercenary work, border skirmishes.
 
-The roster is intentionally small: four characters. Depth over breadth. Each character should feel like a complete martial art unto themselves.
+**The Tournament of Still Water** is held every seven years at a neutral monastery. Fighters come for glory, coin, revenge, or reasons they don't share. The monks don't care why. They only care that the forms are observed.
 
----
-
-## The Roster
-
-| Character | Archetype | Core Fantasy |
-|-----------|-----------|--------------|
-| **剣士 The Ronin** | Balanced / Spacing | The perfect cut at the perfect distance |
-| **僧 The Monk** | Counter / Parry | Your aggression is your undoing |
-| **鬼 The Oni** | Heavy / Armor | Unstoppable force, inevitable arrival |
-| **影 The Shade** | Mobile / Mix-up | Killing you before you know where I am |
+The roster draws from this world: soldiers and nobles, monsters and outcasts, the faithful and the damned.
 
 ---
 
-# 剣士 The Ronin (Kenshi)
+## Roster Overview
 
-*"The sword is already where it needs to be."*
-
-## Philosophy
-
-The Ronin is the purest expression of ma-ai — the sacred distance. They win by controlling space, by being exactly where they need to be, by making the opponent come to them and punishing the approach.
-
-A Ronin player is patient. They don't chase. They create a zone where approaching is death, and they wait for the mistake.
-
-## Playstyle
-
-**Strengths:**
-- Excellent mid-range normals
-- Best whiff punishment in the game
-- Strong Stance game (Drawn Blade)
-- Balanced in all situations
-
-**Weaknesses:**
-- Limited mix-up potential
-- Predictable at close range
-- Struggles when cornered
-- Must win neutral to win
-
-**Ideal Player:**
-Someone who loves footsies, spacing, and the "just out of reach" game. Patient players who like to frustrate opponents into mistakes.
-
-## Move Set
-
-### Light Attacks
-
-**Neutral Light — Quick Draw**
-- Fast horizontal slash at mid-range
-- Your primary poke and neutral tool
-- Startup: 6f | Active: 2f | Recovery: 10f
-
-**Forward Light — Advancing Cut**
-- Slight step forward into slash
-- Good for catching backdashes
-- Startup: 8f | Active: 2f | Recovery: 11f
-
-**Back Light — Retreating Slice**
-- Step back while slashing
-- Creates space while attacking
-- Startup: 7f | Active: 2f | Recovery: 10f
-
-### Heavy Attacks
-
-**Neutral Heavy — Overhead Cleave**
-- Powerful downward slash
-- Excellent for punishing whiffs
-- Startup: 14f | Active: 4f | Recovery: 18f
-
-**Forward Heavy — Lunging Thrust**
-- Long-range forward stab
-- Maximum reach in the game
-- Startup: 16f | Active: 3f | Recovery: 20f
-
-**Back Heavy — Draw Cut**
-- Quick iaido-style slash from sheath
-- Faster than other Heavies, less damage
-- Startup: 12f | Active: 3f | Recovery: 16f
-
-### Grab
-
-**Shoulder Throw**
-- Standard throw, tosses opponent forward
-- Good for corner carry
-- Startup: 10f | Active: 2f | Recovery: 20f
-
-### Stance: Drawn Blade (居合 / Iai)
-
-*Enter by holding Heavy*
-
-The Ronin enters a ready stance, hand on sword hilt. The blade is not drawn — but it could be at any moment.
-
-**Properties:**
-- Threatens fast, powerful slash
-- Opponents cannot approach safely
-- Holding drains Guard (~3% per second)
-- Maximum hold time: ~3 seconds
-
-**Options from Stance:**
-
-| Input | Action | Properties |
-|-------|--------|------------|
-| Release Heavy | **Iai Slash** | Fast slash (12f startup), high damage, excellent range |
-| Forward | **Iai Step** | Quick forward step, maintains Stance |
-| Back | **Cancel** | Return to neutral, small Initiative loss |
-| Light | **Feint** | Animation fake, cancel into Light attack |
-
-**The Mind Game:**
-The Ronin doesn't need to attack from Drawn Blade. The *threat* is the value. The opponent must respect the Iai Slash, which limits their options. The Ronin can hold, advance, or feint based on the opponent's fear response.
-
-### Decisive Blow: Silent Edge
-
-The Ronin sheathes their blade, pauses, then performs a single perfect cut. The opponent falls before they realize they've been struck.
-
-**Visual:** Iaido-style draw cut. Screen goes white, ink slash, opponent splits.
+| # | Name | Archetype | Advantage | Stagger | Finish |
+|---|------|-----------|-----------|---------|--------|
+| 1 | The Conscript | Balanced | Pressure | Guard Break | Standard |
+| 2 | The Duchess | Spacing | Conditioning | Counter Hit | Standard |
+| 3 | The Butcher | Grappler | Burst | Command Grab | Grapple |
+| 4 | Mycella | Setplay | Setplay | Trap Trigger | Trap Trigger |
+| 5 | The Flagellant | Counter | Punish | Armor Trade | Counter |
+| 6 | The Courier | Rushdown | Pressure | Guard Break | Execution Combo |
+| 7 | The Effigy | Stance/Mixup | Conditioning | Stance Punish | Transformation |
+| 8 | The Apothecary | Attrition | Attrition | Guard Break | Standard |
+| 9 | The Revenant | Armor/Slow | Attrition | Armor Trade | Standard |
+| 10 | The Beast | Aggro/Feral | Burst | Counter Hit | Transformation |
 
 ---
 
-# 僧 The Monk (Sō)
-
-*"Your aggression is a gift."*
-
-## Philosophy
-
-The Monk is the embodiment of go no sen — the counter-initiative. They do not strike first. They create openings by making the opponent attack, then turn that aggression back on them.
-
-A Monk player is a wall. Push against them and you'll find yourself on the ground. Their patience is a weapon.
-
-## Playstyle
-
-**Strengths:**
-- Best Parry in the game (Open Palm stance)
-- Devastating counter-attacks
-- Excellent close-range pressure after successful defense
-- Rewards mastery of defensive timing
-
-**Weaknesses:**
-- Must let opponent act first (reactive)
-- Poor at approaching
-- Weak when forced to attack
-- Struggles against patient opponents
-
-**Ideal Player:**
-Someone who loves Parrying, who finds satisfaction in turning aggression back on the attacker. Players who win by making opponents defeat themselves.
-
-## Move Set
-
-### Light Attacks
-
-**Neutral Light — Palm Strike**
-- Quick palm thrust
-- Short range but fast
-- Startup: 5f | Active: 2f | Recovery: 9f
-
-**Forward Light — Advancing Palm**
-- Step forward with palm
-- Good for closing distance after Parry
-- Startup: 7f | Active: 2f | Recovery: 10f
-
-**Back Light — Deflecting Palm**
-- Defensive strike that retreats slightly
-- Safe on block
-- Startup: 6f | Active: 2f | Recovery: 9f
-
-### Heavy Attacks
-
-**Neutral Heavy — Crushing Palm**
-- Two-handed palm strike
-- High damage, causes wallbounce in corner
-- Startup: 13f | Active: 4f | Recovery: 17f
-
-**Forward Heavy — Flowing Strike**
-- Circular arm movement into palm
-- Has autoparry during startup (frames 4-8)
-- Startup: 15f | Active: 4f | Recovery: 19f
-
-**Back Heavy — Rooting Strike**
-- Downward palm to chest
-- Causes extended Stagger on counter-hit
-- Startup: 12f | Active: 3f | Recovery: 18f
-
-### Grab
-
-**Shoulder Lock**
-- Aikido-style joint lock
-- Can choose throw direction (forward or back)
-- Startup: 11f | Active: 2f | Recovery: 21f
-
-### Stance: Open Palm (開手 / Kaishu)
-
-*Enter by holding Block*
-
-The Monk enters an open stance, palms forward. They are inviting attack.
-
-**Properties:**
-- Enhanced Parry window (8f → 12f)
-- Successful Parry guarantees Heavy Counter
-- Holding drains Guard faster (~5% per second)
-- Maximum hold time: ~2 seconds
-
-**Options from Stance:**
-
-| Input | Action | Properties |
-|-------|--------|------------|
-| Parry timing | **Perfect Parry** | Extended window, guaranteed Heavy Counter |
-| Heavy | **Flowing Strike** | Heavy with autoparry frames |
-| Back | **Cancel** | Return to neutral |
-| Evade | **Circle Step** | Enhanced Evade with faster recovery |
-
-**The Mind Game:**
-The Monk in Open Palm is daring the opponent to attack. Smart opponents will wait it out (Guard drain) or Grab (beats Parry). But if they attack and the Monk reads it, they're eating a guaranteed Heavy Counter.
-
-### Decisive Blow: Heart Strike
-
-The Monk places one palm on the opponent's chest, pauses, then channels force through them. The opponent crumples.
-
-**Visual:** Quiet, intimate. The Monk simply touches them. Then the opponent collapses.
+## Character Details
 
 ---
 
-# 鬼 The Oni (Ki)
+### 1. The Conscript
 
-*"I do not move. I arrive."*
+*"I didn't ask for this. But I'm still here."*
 
-## Philosophy
+**Visual:** Young man in battered infantry armor. Sword and small shield. Tired eyes, practical stance. Nothing fancy — a working soldier's gear with dents and repairs.
 
-The Oni is the expression of pure forward pressure. They are slow, readable, and inevitable. Their armor means they don't care about Light attacks. Their damage means one correct read can end a round.
+**Background:** Drafted into a war that ended before he saw real combat. Now he fights in tournaments because it's the only trade he knows. Not talented, not special — just stubborn and well-drilled.
 
-An Oni player is a freight train. You can see them coming. It doesn't help.
+**Playstyle:** The fundamental character. Good at everything, great at nothing. Learns the game's systems through him.
 
-## Playstyle
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Pressure** | Reliable strike/throw mix, plus frames, simple loops |
+| Stagger | **Guard Break** | Standard path — volume of blocked attacks |
+| Finish | **Standard** | Clean overhead strike. Nothing fancy. |
 
-**Strengths:**
-- Light Armor on Heavy attacks (absorbs one Light)
-- Highest damage in the game
-- Terrifying when close
-- Tenuki is strongest here
+**Stance — Drill Form:** A defensive ready stance. Reduces Guard damage taken while held. No special options — just survival.
 
-**Weaknesses:**
-- Slowest movement
-- Most readable attacks
-- Loses to spacing and patience
-- Can be out-maneuvered
-
-**Ideal Player:**
-Someone who loves hard reads, who wants to make a statement. Players who enjoy the mind game of "I know what you're going to do, and I don't care."
-
-## Move Set
-
-### Light Attacks
-
-**Neutral Light — Demon Slap**
-- Heavy backhand
-- Slow for a Light but high damage
-- Startup: 8f | Active: 3f | Recovery: 12f
-
-**Forward Light — Lunge Swipe**
-- Forward movement with horizontal swipe
-- Good range for closing distance
-- Startup: 10f | Active: 3f | Recovery: 14f
-
-**Back Light — Dismissive Backhand**
-- Swat while retreating
-- Creates small space
-- Startup: 9f | Active: 3f | Recovery: 13f
-
-### Heavy Attacks
-
-**Neutral Heavy — Demon Drop**
-- Devastating overhead slam
-- Light Armor throughout startup
-- Startup: 18f | Active: 5f | Recovery: 22f
-
-**Forward Heavy — Charging Blow**
-- Step forward into massive punch
-- Light Armor frames 6-14
-- Startup: 20f | Active: 4f | Recovery: 24f
-
-**Back Heavy — Ground Pound**
-- Slam the ground, shockwave
-- Light Armor frames 4-12
-- Startup: 16f | Active: 5f | Recovery: 20f
-
-### Grab
-
-**Crushing Grip**
-- Lift opponent, slam into ground
-- Highest throw damage
-- Startup: 12f | Active: 2f | Recovery: 22f
-
-### Stance: Demon's Patience (鬼忍 / Kinni)
-
-*Enter by holding Heavy after blocking an attack*
-
-The Oni enters a braced stance. They are preparing to walk through your offense.
-
-**Properties:**
-- Full armor on next action (absorbs any single hit)
-- Next Heavy attack has increased damage
-- Holding drains Guard significantly (~8% per second)
-- Maximum hold time: ~1.5 seconds
-
-**Options from Stance:**
-
-| Input | Action | Properties |
-|-------|--------|------------|
-| Heavy | **Empowered Heavy** | Armored, +25% damage |
-| Forward | **Demon Step** | Short armored advance |
-| Any hit received | **Armor Absorb** | Take damage but continue action |
-| Back | **Cancel** | Return to neutral |
-
-**The Mind Game:**
-The Oni in Demon's Patience is making a statement: "Your next attack doesn't matter." Opponents must either Grab (risky, loses to armored Heavy), wait it out (Guard drain), or accept that they're going to trade and lose.
-
-### Decisive Blow: Demon's Verdict
-
-The Oni grabs the opponent by the head, lifts them off the ground, and crushes. Simple. Brutal.
-
-**Visual:** No finesse. Raw power. The opponent doesn't fall gracefully — they crumple.
+**Design Notes:**
+- The "Ryu" of the roster
+- First character new players should try
+- No gimmicks, no tricks — just fundamentals
+- His strength is having no weaknesses
 
 ---
 
-# 影 The Shade (Kage)
+### 2. The Duchess
 
-*"You are fighting where I was."*
+*"You mistake patience for mercy."*
 
-## Philosophy
+**Visual:** Tall woman in dueling attire — fitted jacket, high collar, riding boots. Rapier held in precise form. Silver-streaked dark hair pulled back. She looks like she's deciding whether you're worth her time.
 
-The Shade is the expression of emptiness — winning by not being where expected. They are fragile but elusive, weak in direct confrontation but devastating when they control the angle.
+**Background:** A countess from a fallen house, stripped of lands but not pride. She fights to rebuild her fortune and remind the world that breeding shows. Every duel is a statement.
 
-A Shade player is a ghost. They hit you from where you weren't looking, then disappear before you can respond.
+**Playstyle:** Mid-range spacing. She controls distance, baits reactions, and punishes mistakes. Rarely commits, always threatens.
 
-## Playstyle
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Conditioning** | Feints, delays, variable timing on thrusts |
+| Stagger | **Counter Hit** | Key moves Stagger on counter — rewards baiting |
+| Finish | **Standard** | A single perfect thrust through the heart |
 
-**Strengths:**
-- Most mobile character
-- Best mix-up potential
-- Can reposition instantly (Flicker)
-- Ambiguous offense
+**Stance — Invitation:** Rapier lowered, weight back. An obvious opening. If opponent attacks, she has a fast counter-thrust that Staggers on hit. If they don't, she can cancel or advance.
 
-**Weaknesses:**
-- Lowest health (one fewer state effectively)
-- Loses hard to correct reads
-- Committal movement options
-- Dies fast if pinned down
-
-**Ideal Player:**
-Someone who loves movement, mix-ups, and making opponents guess. Players who want to feel like a ninja.
-
-## Move Set
-
-### Light Attacks
-
-**Neutral Light — Shadow Cut**
-- Quick knife slash
-- Fastest attack in the game
-- Startup: 4f | Active: 2f | Recovery: 8f
-
-**Forward Light — Sliding Slash**
-- Low slide with knife
-- Can go under some attacks
-- Startup: 6f | Active: 2f | Recovery: 10f
-
-**Back Light — Fade Slash**
-- Slash while backstep
-- Creates significant space
-- Startup: 5f | Active: 2f | Recovery: 9f
-
-### Heavy Attacks
-
-**Neutral Heavy — Spine Cutter**
-- Upward slashing arc
-- Anti-air properties
-- Startup: 11f | Active: 3f | Recovery: 15f
-
-**Forward Heavy — Lunging Stab**
-- Quick forward stab
-- Fastest Heavy in the game
-- Startup: 12f | Active: 3f | Recovery: 16f
-
-**Back Heavy — Whirling Blade**
-- Spinning slash with retreat
-- Hits both sides
-- Startup: 13f | Active: 4f | Recovery: 17f
-
-### Grab
-
-**Throat Grip**
-- Quick grab, repositions behind opponent
-- Switches sides
-- Startup: 9f | Active: 2f | Recovery: 19f
-
-### Stance: Flicker (明滅 / Meimetsu)
-
-*Enter by holding Evade*
-
-The Shade's form becomes indistinct, flickering. They are partially here and partially... elsewhere.
-
-**Properties:**
-- Brief visual obscurity (harder to read movement)
-- Can release into instant reposition (choose 4 directions)
-- Reposition has no i-frames but is very fast
-- Holding drains Guard (~4% per second)
-- Maximum hold time: ~2 seconds
-
-**Options from Stance:**
-
-| Input | Action | Properties |
-|-------|--------|------------|
-| Direction + Release | **Flicker Step** | Instant reposition in direction |
-| Light | **Flicker Slash** | Attack during reposition |
-| Heavy | **Flicker Stab** | Heavy attack during reposition |
-| Block | **Cancel** | Return to neutral where you are |
-
-**The Mind Game:**
-The Shade in Flicker is asking: "Where will I be?" Opponents must guess the direction, and guessing wrong means eating a crossup or losing track of the Shade entirely. But Flicker costs Guard and has no i-frames during the step — a correct read means death.
-
-### Decisive Blow: From the Shadow
-
-The Shade disappears, reappears behind the opponent, and drives a blade through their back. They never saw it coming.
-
-**Visual:** The Shade fades out, the screen holds on the opponent alone, then blood blooms from their chest as they fall forward.
+**Design Notes:**
+- Whiff punisher, footsies specialist
+- High execution ceiling — rewards precise spacing
+- Looks effortless when played well
+- Struggles when cornered or rushed
 
 ---
 
-## Character Health States
+### 3. The Butcher
 
-The Shade has modified health states due to their fragility:
+*"Meat is meat."*
 
-| Character | Whole | Cut | Wounded | Broken |
-|-----------|-------|-----|---------|--------|
-| Ronin | 100% | 75% | 50% | 25% |
-| Monk | 100% | 75% | 50% | 25% |
-| Oni | 100% | 80% | 55% | 30% |
-| Shade | 100% | 66% | 33% | — |
+**Visual:** Massive bald man in a stained leather apron. Carries a cleaver the size of a door. Arms like tree trunks. Looks at opponents the way he looks at livestock.
 
-The Shade effectively has only three states. "Broken" is death for them. This represents their glass cannon nature — they lose Breaths faster but deal damage quickly.
+**Background:** A slaughterhouse foreman who discovered he enjoyed his work too much. Banned from three cities for "professional misconduct." The tournament is legal violence, which suits him fine.
 
-The Oni has slightly more health at each state, representing their toughness — they can survive longer in each Breath.
+**Playstyle:** Slow, terrifying grappler. Every read he makes hurts. He wants to get close and doesn't mind taking damage to do it.
 
-**Breath System Interaction:**
-- All characters have 3 Breaths
-- The Shade dies in 2 hits (Light → Heavy) or 3 Lights
-- The Oni survives slightly longer per Breath
-- Health resets to Whole at each new Breath
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Burst** | High-commitment moves, massive damage on hit |
+| Stagger | **Command Grab** | Unblockable grab with Stagger property |
+| Finish | **Grapple** | Grabs Staggered opponent — no Final Parry possible |
 
----
+**Stance — Tenderizing:** Cleaver raised overhead. Armored against one hit. If he absorbs an attack and lands his follow-up, huge Guard damage. Walking forward in this stance is deeply scary.
 
-## Matchup Philosophy
-
-Each matchup should have a distinct texture:
-
-### Ronin vs Monk
-*Spacing vs Counter*
-- Ronin wants to poke from range
-- Monk wants Ronin to commit to bigger attacks
-- Ronin must be unpredictable
-- Monk must be patient
-
-### Ronin vs Oni
-*Speed vs Armor*
-- Ronin must use spacing to stay safe
-- Oni must corner Ronin to apply pressure
-- Ronin's Lights are armored through
-- Ronin must commit to Heavies or Grabs
-
-### Ronin vs Shade
-*Control vs Chaos*
-- Ronin wants to establish ma-ai
-- Shade wants to make ma-ai meaningless
-- Ronin must anti-air and whiff punish
-- Shade must not get pinned down
-
-### Monk vs Oni
-*Counter vs Unstoppable*
-- Monk's Parry is less effective (armor)
-- Oni's commitment is exploitable
-- Monk must use Grab more
-- Oni must not get baited
-
-### Monk vs Shade
-*Defense vs Ambiguity*
-- Monk struggles with crossups
-- Shade must not be predictable
-- Monk wants Shade to slow down
-- Shade wants Monk to guess wrong
-
-### Oni vs Shade
-*Inevitable vs Elusive*
-- Oni can two-touch the Shade
-- Shade must never get hit
-- Oni must corner and contain
-- Shade must stay mobile forever
+**Design Notes:**
+- Classic grappler archetype
+- His finish bypasses Final Parry — terrifying
+- Very slow, very readable, very punishing
+- Games against him are tense every second
 
 ---
 
-## Visual Design Notes
+### 4. Mycella
 
-### The Ronin
-- Faded traveling clothes, weathered
-- Single katana, worn but cared for
-- Muted earth tones with deep red accent
-- Posture: centered, ready, calm
+*"The forest remembers what you've forgotten."*
 
-### The Monk
-- Simple robes, unadorned
-- No weapon — open hands
-- Faded gold/saffron accent
-- Posture: rooted, welcoming, patient
+**Visual:** Small humanoid figure, vaguely feminine, made of moss and mushroom. Carries a massive puffball mushroom under one arm like a mortar. Cap-like head, bioluminescent spots, black eyes that don't blink.
 
-### The Oni
-- Stylized demon mask
-- Massive frame, heavy presence
-- Dark reds and blacks, crimson accent
-- Posture: hunched forward, looming
+**Background:** A fae creature from the deep woods where the old wars poisoned the land. She's not here for glory or gold. She's here because humans are *interesting* when they're scared.
 
-### The Shade
-- Wrapped in dark cloth, face obscured
-- Twin short blades
-- Near-black with pale blue accent
-- Posture: low, coiled, ready to spring
+**Playstyle:** Setplay/trap character. Plants mushrooms that control space. Herds opponents into bad positions. Patient, creepy, inevitable.
 
----
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Setplay** | Plants mushroom traps that explode when touched |
+| Stagger | **Trap Trigger** | Touching mushroom above 50% Guard = Stagger |
+| Finish | **Trap Trigger** | Staggered opponent touching mushroom = death |
 
-## Audio Design Notes
+**Stance — Germination:** Crouches and plants a mushroom. Can place up to 3. Mushrooms persist until triggered or destroyed (one hit kills them).
 
-Each character has a distinct audio signature:
+**Mushroom Properties:**
+- Proximity trigger — explode when opponent walks near
+- Explosion deals Guard damage and small knockback
+- If Guard is above 50% when triggered, causes Stagger instead
+- Staggered opponent touching mushroom = instant kill
 
-### The Ronin
-- Clean blade sounds
-- Cloth movement
-- Measured breathing
-- Decisive Blow: One perfect *shing*
-
-### The Monk
-- Soft footsteps
-- Fabric rustle
-- Calm breathing
-- Decisive Blow: A single deep exhale
-
-### The Oni
-- Heavy footfalls
-- Low rumbling presence
-- Growling breath
-- Decisive Blow: Bone crunch
-
-### The Shade
-- Near-silent movement
-- Blade whisper
-- No audible breathing
-- Decisive Blow: Just the body hitting the ground
+**Design Notes:**
+- Unique win condition — doesn't need to land Decisive Blow herself
+- Weak in direct combat, strong in prepared situations
+- "Cute" in a deeply unsettling way
+- Rewards planning and spatial awareness
 
 ---
 
-## Future Roster Considerations
+### 5. The Flagellant
 
-If the game expands, potential additions:
+*"Suffering is the only honest prayer."*
 
-**弓 The Archer (Yumi)** — Zoning archetype, controls space with projectile threats
+**Visual:** Gaunt man in torn robes, bare chest covered in ritual scars. Chain wrapped around one arm, weighted end dragging. Hood shadows his face but not his smile.
 
-**忍 The Shinobi (Ninja)** — Trap-based, sets up situations and forces opponent into them
+**Background:** A former priest who found his faith in pain rather than scripture. The church cast him out; he considers this a blessing. Every wound is a lesson, every scar a verse.
 
-**侍 The Samurai (Bushi)** — Stance-heavy, multiple stances with different properties
+**Playstyle:** Counter-specialist who gets stronger when hit. Wants to take damage, then make you regret giving it.
 
-**巫 The Shrine Maiden (Miko)** — Buff/debuff, modifies game state temporarily
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Punish** | Waits for mistakes, devastating counter damage |
+| Stagger | **Armor Trade** | Key moves have armor; absorb + connect = Stagger |
+| Finish | **Counter** | Enters counter stance; if attacked, instant kill |
 
-Each would need to bring a genuinely new philosophy, not just new moves. The roster should remain small and focused.
+**Stance — Mortification:** Spreads arms wide, completely open. Taking damage in this stance fills a "Penance" meter. At full Penance, his next attack has massive damage and Guard break.
+
+**Unique Mechanic — Penance:**
+- Builds when taking damage (not when blocking)
+- Decays slowly over time
+- At full Penance: next attack Staggers on hit regardless of method
+
+**Design Notes:**
+- Risk/reward character — intentionally takes damage
+- His Counter finish is the ultimate read
+- Terrifying when he has Penance stocked
+- Struggles if opponent refuses to engage
+
+---
+
+### 6. The Courier
+
+*"Package for you. It's violence."*
+
+**Visual:** Wiry young woman in leather travel gear, goggles pushed up on forehead. Fighting style uses a weighted satchel bag as a flail and her own momentum. Always moving, always grinning.
+
+**Background:** Guild messenger who got bored of just delivering letters. Started delivering beatings on the side. The tournament is a paid vacation where she gets to hit people professionally.
+
+**Playstyle:** Pure rushdown. In your face immediately and doesn't leave. Overwhelms with speed and constant pressure.
+
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Pressure** | Fast normals, run-up options, relentless |
+| Stagger | **Guard Break** | Sheer volume of blocked attacks |
+| Finish | **Execution Combo** | 4-hit flurry ending in satchel slam |
+
+**Stance — Sprinter's Start:** A runner's crouch. Launches into a fast dash that can go into attack, grab, or cross-up. Very fast, very committal.
+
+**Unique Mechanic — Momentum:**
+- Builds while moving forward, attacking, or pressuring
+- Decays while stationary, blocking, or retreating
+- At high Momentum: increased frame advantage on attacks
+
+**Design Notes:**
+- Aggressive, energetic, slightly unhinged
+- Simple gameplan: get in, stay in, never stop
+- Weak defense, weak neutral — but rarely plays neutral
+- Her Execution Combo finish is the most stylish in the game
+
+---
+
+### 7. The Effigy
+
+*"..."*
+
+**Visual:** A scarecrow given terrible life. Burlap body, button eyes, straw leaking from joints. Moves in jerky stop-motion. Wields farm tools — a rusty scythe, a pitchfork. Sometimes its head rotates 180 degrees.
+
+**Background:** No one knows what animates it. Found standing in a burned field after a border war. It walked to the tournament on its own. The monks debated refusing it entry. They decided something that determined deserves a chance.
+
+**Playstyle:** Creepy stance-switcher with disjointed animations and hitboxes. Hard to read, hard to predict. Wins by being *wrong* in ways opponents can't process.
+
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Conditioning** | Delayed/disjointed attacks, unnatural rhythm |
+| Stagger | **Stance Punish** | Wrong response to stance = Stagger |
+| Finish | **Transformation** | Becomes "Harvest Mode" — any hit kills for 3 seconds |
+
+**Stance — Scarecrow Pose:** Goes perfectly still, arms outstretched. Three things can happen:
+- If attacked high: ducks and counter-hits (Staggers)
+- If attacked low: hops and stomps (Staggers)
+- If grabbed: body falls apart, reappears behind opponent
+
+Opponent must guess or wait it out (stance drains Effigy's Guard).
+
+**Unique Mechanic — Uncanny:**
+- Effigy's animations have unusual timing
+- Attacks have delayed/early active frames compared to animation
+- Creates constant uncertainty about when to act
+
+**Design Notes:**
+- The "weird" character every roster needs
+- Not random — very learnable, but uncomfortable
+- Harvest Mode transformation is terrifying
+- Either you "get" Effigy or you don't
+
+---
+
+### 8. The Apothecary
+
+*"Hold still. This won't hurt me at all."*
+
+**Visual:** Middle-aged woman in practical traveling clothes with many pockets. Bandolier of vials across chest. Fights with a cane that's also a blowgun. Spectacles, gray-streaked hair in a bun, absolutely zero bedside manner.
+
+**Background:** A doctor-for-hire who's treated soldiers, bandits, and worse. Knows exactly where to hit to make it hurt. The tournament pays well, and she's curious what the monks know about anatomy.
+
+**Playstyle:** Attrition specialist. Pokes, prods, and slowly poisons. Doesn't need big openings — just time.
+
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Attrition** | Safe pokes, chip damage, slow Guard drain |
+| Stagger | **Guard Break** | Accumulated Guard damage, no single big hit |
+| Finish | **Standard** | A precise strike to a vital point |
+
+**Stance — Examination:** Studies opponent. While held, reveals information about opponent's current Guard level (shown precisely instead of estimated). Can also cancel into a fast poke.
+
+**Unique Mechanic — Toxicity:**
+- Some attacks apply "Toxin" stacks
+- Toxin slowly drains Guard over time
+- Stacks up to 3; decays if not refreshed
+- Fully stacked = constant Guard pressure
+
+**Design Notes:**
+- Patient, methodical, slightly sadistic
+- Wins by making blocking unsustainable
+- Weak burst damage, weak comeback potential
+- Rewards players who can maintain control
+
+---
+
+### 9. The Revenant
+
+*"Death was a door, not a wall."*
+
+**Visual:** A knight in ancient, rusted armor. Moves slowly, heavily. Glimpses of bone through visor and joints. Carries a bastard sword too heavy for living arms. Each step sounds like a funeral bell.
+
+**Background:** A knight who died in the old wars and didn't stop. Bound by an oath he can't remember to a lord who turned to dust. He fights because it's all that's left. Maybe one day someone will release him.
+
+**Playstyle:** Slow, armored attrition. Walks forward and doesn't stop. Taking hits doesn't matter when you're already dead.
+
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Attrition** | Slow advance, heavy pokes, constant threat |
+| Stagger | **Armor Trade** | Many moves have armor; absorb + connect = Stagger |
+| Finish | **Standard** | A massive overhead cleave |
+
+**Stance — Inexorable:** Walking forward with sword readied. Armored during the walk. Cannot dash, cannot retreat in this stance — only advance.
+
+**Unique Mechanic — Undying:**
+- When Revenant would enter Stagger from Guard Break, he doesn't
+- Instead, he enters "Last Gasp" — one more hit kills him, but he has 2 seconds of full armor
+- Essentially turns desperation into a threat
+
+**Design Notes:**
+- Terrifying inevitability
+- Slow enough to react to; armored enough that it doesn't matter
+- Last Gasp creates dramatic reversals
+- New players will panic; experienced players will respect him
+
+---
+
+### 10. The Beast
+
+*"RUN."*
+
+**Visual:** A woman wrapped in chains she put on herself. Feral eyes, filed teeth, hair like a mane. The chains aren't to restrain her — they're weapons when she lets go. Under stress, her features shift toward something not human.
+
+**Background:** Born with something wrong in her blood. The change comes when she's hurt or angry. She's learned to use it, not control it. The tournament is a place where the monster is useful.
+
+**Playstyle:** High-aggression brawler who transforms under pressure. Starts human, ends nightmare.
+
+| Phase | Method | Notes |
+|-------|--------|-------|
+| Advantage | **Burst** | High-risk, high-damage attacks |
+| Stagger | **Counter Hit** | Reckless attacks that Stagger on counter |
+| Finish | **Transformation** | Fully transforms; any hit during Feral state kills |
+
+**Stance — Straining:** Visibly fighting the change. Holding builds "Feral" meter. Releasing enters human options or, if Feral is high, monster attacks.
+
+**Unique Mechanic — The Change:**
+- Feral meter builds when taking damage or landing hits
+- High Feral = access to monster moves (faster, more damage, less safe)
+- Stagger opportunity triggers full transformation
+- In Feral Finish state: faster, wilder, any hit kills, but only lasts 3 seconds
+
+**Design Notes:**
+- The "berserker" archetype
+- Terrifying when she's losing (Feral builds faster)
+- Transformation finish is a commitment — miss and she's vulnerable
+- High skill ceiling on managing the Change
+
+---
+
+## Roster Balance Notes
+
+**Advantage Coverage:**
+- Pressure: Conscript, Courier
+- Conditioning: Duchess, Effigy
+- Setplay: Mycella
+- Punish: Flagellant
+- Attrition: Apothecary, Revenant
+- Burst: Butcher, Beast
+
+**Stagger Coverage:**
+- Guard Break: Conscript, Courier, Apothecary
+- Counter Hit: Duchess, Beast
+- Command Grab: Butcher
+- Trap Trigger: Mycella
+- Armor Trade: Flagellant, Revenant
+- Stance Punish: Effigy
+
+**Finish Coverage:**
+- Standard: Conscript, Duchess, Apothecary, Revenant
+- Execution Combo: Courier
+- Transformation: Effigy, Beast
+- Trap Trigger: Mycella
+- Grapple: Butcher
+- Counter: Flagellant
+
+**Tone Balance:**
+- Grounded/Serious: Conscript, Duchess, Apothecary, Revenant
+- Absurd/Unsettling: Mycella, Effigy, Butcher
+- Energetic/Chaotic: Courier, Beast
+- Dark/Religious: Flagellant
+
+---
+
+## Visual Silhouette Guide
+
+For pixel art readability:
+
+| Character | Key Shape | Distinguishing Feature |
+|-----------|-----------|----------------------|
+| Conscript | Medium, balanced | Shield on arm |
+| Duchess | Tall, thin | Rapier extended forward |
+| Butcher | Massive, wide | Huge cleaver |
+| Mycella | Small, asymmetric | Giant mushroom under arm |
+| Flagellant | Tall, gaunt | Chain dragging |
+| Courier | Small, dynamic | Satchel swinging |
+| Effigy | Tall, angular | Scarecrow silhouette |
+| Apothecary | Medium, composed | Cane/blowgun |
+| Revenant | Large, heavy | Ancient armor outline |
+| Beast | Medium, hunched | Chains wrapped around |
+
+Every character should be instantly recognizable from silhouette alone.

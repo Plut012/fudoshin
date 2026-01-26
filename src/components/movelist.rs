@@ -93,6 +93,14 @@ pub struct MoveData {
     // Movement
     /// Optional movement during attack
     pub movement: Option<AttackMovement>,
+
+    // Hitstop (freeze frames on hit)
+    /// Hitstop frames on normal hit
+    pub hitstop_on_hit: u32,
+    /// Hitstop frames when blocked
+    pub hitstop_on_block: u32,
+    /// Hitstop frames on counter hit
+    pub hitstop_on_counter: u32,
 }
 
 impl MoveData {
@@ -105,6 +113,17 @@ impl MoveData {
     pub fn hitstun_frames(&self) -> u32 {
         // Rough formula: more damage = more hitstun
         (self.damage * 2.0) as u32 + 10
+    }
+
+    /// Get appropriate hitstop based on hit type
+    pub fn get_hitstop(&self, is_blocked: bool, is_counter: bool) -> u32 {
+        if is_counter {
+            self.hitstop_on_counter
+        } else if is_blocked {
+            self.hitstop_on_block
+        } else {
+            self.hitstop_on_hit
+        }
     }
 }
 
@@ -157,10 +176,13 @@ impl Movelist {
                 recovery_frames: 10,
                 damage: 8.0,
                 on_block: -2,
-                hitbox_offset: Vec2::new(40.0, 0.0),
-                hitbox_size: Vec2::new(60.0, 60.0),
+                hitbox_offset: Vec2::new(50.0, 0.0),  // Scaled by 1.25x
+                hitbox_size: Vec2::new(150.0, 119.0),  // Scaled by 1.25x (1.5x character width)
                 properties: vec![],
                 movement: None,
+                hitstop_on_hit: 9,
+                hitstop_on_block: 6,
+                hitstop_on_counter: 12,
             },
         );
 
@@ -175,10 +197,13 @@ impl Movelist {
                 recovery_frames: 10,
                 damage: 6.0,
                 on_block: -2,
-                hitbox_offset: Vec2::new(50.0, 0.0),
-                hitbox_size: Vec2::new(70.0, 60.0),
+                hitbox_offset: Vec2::new(62.5, 0.0),  // Scaled by 1.25x
+                hitbox_size: Vec2::new(163.0, 119.0),  // Scaled by 1.25x (1.6x character width, lunging)
                 properties: vec![],
                 movement: Some(AttackMovement::forward(50.0)),
+                hitstop_on_hit: 8,
+                hitstop_on_block: 6,
+                hitstop_on_counter: 11,
             },
         );
 
@@ -193,10 +218,13 @@ impl Movelist {
                 recovery_frames: 11,
                 damage: 7.0,
                 on_block: -3,
-                hitbox_offset: Vec2::new(40.0, -30.0),  // Lower hitbox
-                hitbox_size: Vec2::new(65.0, 40.0),
+                hitbox_offset: Vec2::new(50.0, -37.5),  // Lower hitbox, scaled by 1.25x
+                hitbox_size: Vec2::new(156.0, 81.0),  // Scaled by 1.25x (1.5x character width, low)
                 properties: vec![],
                 movement: None,
+                hitstop_on_hit: 8,
+                hitstop_on_block: 6,
+                hitstop_on_counter: 11,
             },
         );
 
@@ -211,10 +239,13 @@ impl Movelist {
                 recovery_frames: 9,
                 damage: 6.0,
                 on_block: 1,  // Positive on block (safe)
-                hitbox_offset: Vec2::new(35.0, 0.0),
-                hitbox_size: Vec2::new(55.0, 60.0),
+                hitbox_offset: Vec2::new(44.0, 0.0),  // Scaled by 1.25x
+                hitbox_size: Vec2::new(144.0, 119.0),  // Scaled by 1.25x (1.4x character width, defensive)
                 properties: vec![],
                 movement: Some(AttackMovement::back(30.0)),
+                hitstop_on_hit: 8,
+                hitstop_on_block: 6,
+                hitstop_on_counter: 11,
             },
         );
 
@@ -231,10 +262,13 @@ impl Movelist {
                 recovery_frames: 18,
                 damage: 15.0,
                 on_block: -8,
-                hitbox_offset: Vec2::new(50.0, 0.0),
-                hitbox_size: Vec2::new(90.0, 80.0),
+                hitbox_offset: Vec2::new(62.5, 0.0),  // Scaled by 1.25x
+                hitbox_size: Vec2::new(213.0, 163.0),  // Scaled by 1.25x (2.1x character width)
                 properties: vec![AttackProperty::LightArmor],
                 movement: None,
+                hitstop_on_hit: 13,
+                hitstop_on_block: 10,
+                hitstop_on_counter: 16,
             },
         );
 
@@ -249,10 +283,13 @@ impl Movelist {
                 recovery_frames: 18,
                 damage: 13.0,
                 on_block: -6,
-                hitbox_offset: Vec2::new(60.0, 10.0),  // Slightly higher
-                hitbox_size: Vec2::new(100.0, 80.0),
+                hitbox_offset: Vec2::new(75.0, 12.5),  // Slightly higher, scaled by 1.25x
+                hitbox_size: Vec2::new(238.0, 163.0),  // Scaled by 1.25x (2.4x character width, lunging)
                 properties: vec![],
                 movement: Some(AttackMovement::forward(80.0)),
+                hitstop_on_hit: 12,
+                hitstop_on_block: 9,
+                hitstop_on_counter: 15,
             },
         );
 
@@ -267,10 +304,13 @@ impl Movelist {
                 recovery_frames: 20,
                 damage: 16.0,
                 on_block: -10,
-                hitbox_offset: Vec2::new(50.0, -35.0),  // Low hitbox
-                hitbox_size: Vec2::new(110.0, 35.0),
+                hitbox_offset: Vec2::new(62.5, -43.75),  // Low hitbox, scaled by 1.25x
+                hitbox_size: Vec2::new(250.0, 63.0),  // Scaled by 1.25x (2.5x character width, sweep)
                 properties: vec![],
                 movement: None,
+                hitstop_on_hit: 14,
+                hitstop_on_block: 11,
+                hitstop_on_counter: 17,
             },
         );
 
@@ -285,10 +325,13 @@ impl Movelist {
                 recovery_frames: 16,
                 damage: 14.0,
                 on_block: -4,  // Safer than normal heavy
-                hitbox_offset: Vec2::new(45.0, 0.0),
-                hitbox_size: Vec2::new(85.0, 80.0),
+                hitbox_offset: Vec2::new(56.0, 0.0),  // Scaled by 1.25x
+                hitbox_size: Vec2::new(200.0, 163.0),  // Scaled by 1.25x (2.0x character width, defensive)
                 properties: vec![],
                 movement: Some(AttackMovement::back(40.0)),
+                hitstop_on_hit: 13,
+                hitstop_on_block: 10,
+                hitstop_on_counter: 16,
             },
         );
 
@@ -303,10 +346,13 @@ impl Movelist {
                 recovery_frames: 20,
                 damage: 12.0,
                 on_block: 0,
-                hitbox_offset: Vec2::new(35.0, 0.0),
-                hitbox_size: Vec2::new(50.0, 80.0),
+                hitbox_offset: Vec2::new(44.0, 0.0),  // Scaled by 1.25x
+                hitbox_size: Vec2::new(150.0, 150.0),  // Scaled by 1.25x (1.5x character width, square, very generous)
                 properties: vec![AttackProperty::Unblockable],
                 movement: None,
+                hitstop_on_hit: 11,
+                hitstop_on_block: 0,  // Can't be blocked
+                hitstop_on_counter: 14,
             },
         );
 

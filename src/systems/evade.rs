@@ -41,11 +41,11 @@ pub fn handle_evade_input(
                     direction,
                     invincible: false, // Becomes true after startup
                 },
-                StateTimer::new(15), // Total evade duration: 3f startup + 4f active + 8f recovery
+                StateTimer::new(10), // Total evade duration: 3f startup + 4f active + 3f recovery
             ));
 
             // Apply evade movement (fast dash)
-            velocity.0 = direction * 500.0; // Fast movement
+            velocity.0 = direction * 300.0; // Fast movement
 
             info!("Player {:?} evading in direction {:?}", player, direction);
         }
@@ -67,10 +67,7 @@ pub fn progress_evade(
             evade.invincible = false;
         }
 
-        // Slow down during recovery (after frame 7)
-        if timer.elapsed >= 7 {
-            velocity.0 *= 0.8; // Decelerate
-        }
+        // Full speed throughout - no deceleration
 
         // End evade when timer completes
         if timer.is_complete() {

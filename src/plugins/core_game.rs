@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::components::breath::RoundEndEvent;
 use crate::events::combat_events::*;
-use crate::systems::{attack, breath, chain, collision, damage, evade, game_state, guard, health, initiative, input, menus, momentum, movement, pressure, ui};
+use crate::systems::{attack, breath, chain, collision, damage, evade, game_state, guard, health, hitstop, initiative, input, menus, momentum, movement, pressure, ui};
 use game_state::GameState;
 
 /// Spawn players when entering InGame state
@@ -42,7 +42,7 @@ fn spawn_players(mut commands: Commands) {
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.9, 0.2, 0.2),  // Red
-                custom_size: Some(Vec2::new(60.0, 120.0)),
+                custom_size: Some(Vec2::new(100.0, 200.0)),  // Increased by 25%
                 ..default()
             },
             transform: Transform::from_xyz(-300.0, 0.0, 0.0),
@@ -69,7 +69,7 @@ fn spawn_players(mut commands: Commands) {
         SpriteBundle {
             sprite: Sprite {
                 color: Color::srgb(0.2, 0.4, 0.9),  // Blue
-                custom_size: Some(Vec2::new(60.0, 120.0)),
+                custom_size: Some(Vec2::new(100.0, 200.0)),  // Increased by 25%
                 ..default()
             },
             transform: Transform::from_xyz(300.0, 0.0, 0.0),
@@ -149,6 +149,8 @@ impl Plugin for CoreGamePlugin {
                 movement::update_movement_state,
             ).chain().run_if(in_state(GameState::InGame)))
             .add_systems(Update, (
+                // Hitstop processing - MUST run first before state progression
+                hitstop::process_hitstop,
                 // State progression
                 breath::tick_round_countdown,      // Phase 4: Round countdown
                 breath::tick_round_timer,          // Phase 4: Round timer
@@ -174,6 +176,7 @@ impl Plugin for CoreGamePlugin {
             ).chain().run_if(in_state(GameState::InGame)))
             .add_systems(Update, (
                 // Reactions - Part 1
+                hitstop::apply_hitstop_on_hit,   // Apply hitstop when hits connect
                 guard::check_parry_success,
                 damage::apply_hit_reactions,
                 health::apply_health_damage,  // Phase 4: Apply damage to health
@@ -201,7 +204,9 @@ impl Plugin for CoreGamePlugin {
                 chain::mark_chainable_on_hit,
             ).chain().run_if(in_state(GameState::InGame)))
             .add_systems(Update, (
-                // Visual feedback
+                // Visual feedback - Part 1
+                hitstop::hitstop_screen_shake,    // Screen shake during hitstop
+                hitstop::cleanup_hitstop_camera,  // Reset camera after hitstop
                 attack::visualize_attack_phases,
                 attack::visualize_attack_direction,  // Phase 4.5: Show attack direction
                 guard::visualize_blocking,
@@ -211,6 +216,9 @@ impl Plugin for CoreGamePlugin {
                 breath::visualize_decisive_blow_availability,  // Phase 4: Decisive blow danger
                 ui::render_breath_indicators,    // Phase 4: Breath UI
                 ui::render_health_bars,          // Phase 4: Health bars
+            ).run_if(in_state(GameState::InGame)))
+            .add_systems(Update, (
+                // Visual feedback - Part 2
                 ui::render_round_timer,          // Phase 4: Round timer
                 ui::render_round_text_indicator, // Phase 4: Round text
                 ui::render_victory_screen,       // Phase 4: Victory screen

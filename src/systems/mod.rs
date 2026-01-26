@@ -10,6 +10,7 @@ pub mod evade;
 pub mod game_state;
 pub mod guard;
 pub mod health;
+pub mod hitstop;
 pub mod initiative;
 pub mod input;
 pub mod menus;

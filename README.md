@@ -15,6 +15,8 @@ A minimalist fighting game where victory is earned through superior perception, 
 - Block system with guard meter and guard breaks
 - 6-frame parry window that staggers attackers
 - Evade with i-frames and directional movement
+- **Hitstop/freeze frames for chunky, satisfying hits**
+- **Generous hitboxes matching Street Fighter proportions (1.5-2.5x character width)**
 - Frame advantage tracking (+/- initiative)
 - Pressure state with movement/attack bonuses
 - Chain attacks (Light → Light cancels on hit)

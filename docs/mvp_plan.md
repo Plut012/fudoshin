@@ -1,19 +1,22 @@
-# Fudoshin — Bevy Implementation Plan
+# Fudoshin — MVP Implementation Plan
 
-*Building the immovable mind with clean architecture and data-driven design*
+*Building the immovable mind with clean architecture and feel-first development*
 
 ---
 
 ## Philosophy
 
+**Feel first, features second.**
+The game's identity lives in its moment-to-moment feel — the weight of hits, the tension of spacing, the satisfaction of a correct read. If this foundation is wrong, no amount of content will fix it.
+
 **Data-driven, not code-driven.**
 Frame data, damage values, move properties — all live in `.ron` files. Balance changes = edit text, hot-reload, test. No code compilation needed.
 
-**Clear boundaries, simple mental model.**
-Each system does one thing. Each component represents one concept. The codebase reads like the game design document.
+**Vertical slice over horizontal sprawl.**
+One complete character that feels incredible is more valuable than four half-finished characters. Build deep, then scale wide.
 
 **Extensibility by default.**
-Adding a new character means creating a `.ron` file and sprites. Core systems never change.
+The framework should support diverse character archetypes (Combat Phases: Advantage → Stagger → Finish) without core system changes.
 
 ---
 
@@ -23,16 +26,15 @@ Adding a new character means creating a `.ron` file and sprites. Core systems ne
 - **Rust 1.75+** (stable toolchain)
 - **Resolution:** 1280x720 (balanced for hand-drawn sprites)
 - **Target:** 60 FPS locked (fighting game standard)
-- **Input:** Keyboard (Phase 1), Gamepad (Phase 7)
+- **Input:** Keyboard (MVP), Gamepad (post-MVP)
 - **Data Format:** RON (Rusty Object Notation) for all game data
 - **Hot Reload:** `bevy_asset_loader` + watching file changes
 
 ### Development Tools
 
 - **bevy_inspector_egui** — inspect entities/components live
-- **bevy_editor_pls** — pause, step frames, fly camera
 - **bevy_framepace** — locked 60 FPS
-- **iyes_perf_ui** — FPS counter
+- **F1 debug view** — hitboxes, hurtboxes, frame data
 
 ---
 
@@ -44,13 +46,7 @@ fudoshin/
 ├── assets/
 │   ├── data/                    # ← All game balance lives here
 │   │   ├── characters/
-│   │   │   ├── ronin.ron        # Frame data, move properties
-│   │   │   ├── monk.ron
-│   │   │   └── ...
-│   │   ├── moves/               # Move definitions (composable)
-│   │   │   ├── light_attacks.ron
-│   │   │   ├── heavy_attacks.ron
-│   │   │   └── grabs.ron
+│   │   │   └── conscript.ron    # Frame data, move properties
 │   │   └── game_config.ron      # Global values (frame rates, physics)
 │   ├── sprites/
 │   │   └── characters/
@@ -61,207 +57,590 @@ fudoshin/
 ├── src/
 │   ├── main.rs                  # Entry point, plugin registration
 │   ├── components/              # ← Pure data, no logic
-│   │   ├── mod.rs
 │   │   ├── character.rs         # Health state, position
 │   │   ├── combat.rs            # Attack, Defense, Hitbox
 │   │   ├── state.rs             # CharacterState enum, StateTimer
-│   │   ├── initiative.rs        # Initiative, Momentum, Desperation
+│   │   ├── hitstop.rs           # Hitstop component (NEW)
 │   │   └── guard.rs             # GuardMeter, GuardBreak
 │   ├── systems/                 # ← Each system = one responsibility
-│   │   ├── mod.rs
-│   │   ├── movement.rs          # Walk, step, backdash, jump
-│   │   ├── input.rs             # Input buffering, player mapping
+│   │   ├── movement.rs          # Walk, step, backdash, evade
 │   │   ├── attack.rs            # Hitbox activation, damage application
-│   │   ├── defense.rs           # Block, parry, evade
-│   │   ├── initiative.rs        # Initiative gain/loss, frame advantage
+│   │   ├── hitstop.rs           # Hitstop freeze system (NEW)
+│   │   ├── combo.rs             # Cancel system, input buffer (NEW)
 │   │   ├── guard.rs             # Guard meter fill/drain, guard break
-│   │   ├── state_machine.rs     # State transitions
-│   │   ├── collision.rs         # Hitbox/hurtbox detection
-│   │   ├── decisive_blow.rs     # Kill conditions, Final Parry
-│   │   ├── breath.rs            # Round management, reset logic
-│   │   └── frame_data.rs        # Startup/active/recovery tracking
-│   ├── resources/               # ← Global game state
-│   │   ├── mod.rs
-│   │   ├── match_state.rs       # Current match, scores, breaths
-│   │   └── frame_config.rs      # Frame timings (loaded from RON)
-│   ├── events/                  # ← Decoupled communication
-│   │   ├── mod.rs
-│   │   ├── combat_events.rs     # HitEvent, ParryEvent, GuardBreakEvent
-│   │   └── match_events.rs      # BreathTakenEvent, MatchEndEvent
+│   │   └── collision.rs         # Hitbox/hurtbox detection
 │   ├── data/                    # ← Data structure definitions
-│   │   ├── mod.rs
 │   │   ├── character_data.rs    # Loaded from .ron
-│   │   ├── move_data.rs         # Loaded from .ron
-│   │   └── frame_data.rs        # Startup, active, recovery structs
-│   └── plugins/                 # ← Grouped systems
-│       ├── mod.rs
+│   │   └── move_data.rs         # Loaded from .ron
+│   └── plugins/
 │       ├── core_game.rs         # Movement, combat, state machine
-│       ├── combat_mechanics.rs  # Initiative, guard, decisive blow
-│       └── debug.rs             # Inspector, frame stepper, hitbox viz
+│       └── debug.rs             # Inspector, hitbox viz
 └── docs/
     ├── mvp_plan.md              # This file
-    └── architecture.md          # ECS patterns, data flow diagrams
+    ├── combat_phases.md         # Character design framework
+    ├── roster.md                # 10-character roster
+    └── todo/
+        ├── HITSTOP_IMPLEMENTATION.md
+        ├── HITBOX_HURTBOX_SIZING.md
+        └── SHORT_COMBO_SYSTEM.md
 ```
 
 ---
 
-## Design Patterns for Clean Architecture
+## Current State (Phases 0-4 Complete ✅)
 
-### 1. Data-Driven Balance
+### What's Working
 
-**All tunable values live in `assets/data/`**.
+**Phase 0:** ✅ Project setup, Bevy 0.14, 60 FPS locked, hot-reload ready
 
-Example: `assets/data/characters/ronin.ron`
-```ron
-(
-    name: "Ronin",
-    moves: {
-        "neutral_light": (
-            startup: 6,
-            active: 2,
-            recovery: 10,
-            damage: StateDelta(1),        // Whole → Cut
-            on_block: -2,                 // Frame disadvantage
-            hitbox: Rect(20, 0, 40, 60),  // x, y, w, h offset
-            properties: [ChainableIntoSelf(2)], // Can chain 2x
-        ),
-        "neutral_heavy": (
-            startup: 14,
-            active: 4,
-            recovery: 18,
-            damage: StateDelta(2),        // Whole → Wounded
-            on_block: -8,
-            hitbox: Rect(30, 10, 60, 70),
-            properties: [LightArmor],     // Absorbs one light hit
-        ),
-        // ... more moves
-    },
-    stance: Some((
-        name: "DrawnBlade",
-        entry: HoldHeavy,
-        guard_drain: 0.03,              // per second
-        release_move: "drawn_slash",
-    )),
-)
-```
+**Phase 1:** ✅ Movement foundation
+- Walk, step, backdash, evade
+- Responsive, snappy controls
+- Stage boundaries
 
-**To change balance:** Edit the file. Save. Hot-reload. Test. No compilation.
+**Phase 2:** ✅ Core combat triangle
+- 3 attack types (Light, Heavy, Grab)
+- Block with guard meter
+- 6-frame parry window
+- Evade with i-frames
+- Hitbox/hurtbox collision
 
-### 2. Component Composition
+**Phase 3:** ✅ Initiative & pressure
+- Frame advantage tracking
+- Pressure state with bonuses
+- Chain attacks (Light → Light)
+- Counter hit system
+- Momentum tracking
 
-Components are **pure data**. No methods, no logic.
+**Phase 4:** ✅ Health, breaths, rounds
+- Health states (Whole → Cut → Wounded → Broken)
+- Breath system (3 stocks per match)
+- Round management with countdown/timer
+- Decisive Blow conditions
+- Victory conditions and UI
 
-```rust
-// src/components/character.rs
-#[derive(Component)]
-pub struct HealthState {
-    pub current: HealthLevel,
-}
+### What's Missing
 
-#[derive(Component)]
-pub struct Initiative;  // Tag component: holder has initiative
+**Critical game feel gaps:**
+- ❌ Hitstop/freeze frames on hits (industry standard)
+- ❌ Hitbox sizes 30-50% too small
+- ❌ Combo system limited (only Light → Light)
+- ❌ No input buffer
+- ❌ No damage scaling
 
-#[derive(Component)]
-pub struct GuardMeter {
-    pub current: f32,   // 0.0 to 1.0
-    pub max: f32,
-}
+**Framework gaps:**
+- ❌ Data-driven character loading (RON files exist but not loaded)
+- ❌ Stagger method variety (only Guard Break implemented)
+- ❌ Finish type variety (only Standard implemented)
+- ❌ Character-specific mechanics framework
 
-#[derive(Component)]
-pub struct FrameTimer {
-    pub elapsed: u32,   // Frame count
-    pub target: u32,    // When to transition
-}
-```
+**Content gaps:**
+- ❌ All characters use same generic movelist
+- ❌ No character-specific stances fully implemented
+- ❌ No distinct character identities
 
-### 3. Single-Responsibility Systems
+---
 
-Each system does **one thing**. Systems communicate via Events.
+## Phase-by-Phase Implementation
+
+### Phase 5: Game Feel Foundation (2-3 weeks)
+
+**Goal:** Hits feel meaty, attacks connect reliably, combos are satisfying
+
+**Priority: CRITICAL** — Without this, the game doesn't feel like Fudoshin
+
+#### 5.1 Hitstop System (Week 1)
+
+**Reference:** `docs/todo/HITSTOP_IMPLEMENTATION.md`
+
+**Why critical:** "The single most important feature for making hits feel chunky and satisfying"
+
+**Implementation:**
 
 ```rust
-// src/systems/guard.rs
+// src/components/hitstop.rs
+#[derive(Component)]
+pub struct Hitstop {
+    pub frames_remaining: u32,
+    pub total_frames: u32,
+}
 
-/// Fills guard meter when blocking attacks
-pub fn fill_guard_on_block(
+// Add to MoveData in src/components/movelist.rs
+pub struct MoveData {
+    // ... existing fields
+    pub hitstop_on_hit: u32,      // 9f for lights, 13f for heavies
+    pub hitstop_on_block: u32,    // 6f for lights, 10f for heavies
+    pub hitstop_on_counter: u32,  // Add 3f bonus
+}
+```
+
+**Systems to add:**
+
+```rust
+// src/systems/hitstop.rs
+
+/// Apply hitstop to both attacker and defender on hit
+pub fn apply_hitstop_on_hit(
+    mut commands: Commands,
     mut hit_events: EventReader<HitEvent>,
-    mut guard_query: Query<&mut GuardMeter>,
 ) {
     for event in hit_events.read() {
-        if event.was_blocked {
-            if let Ok(mut guard) = guard_query.get_mut(event.defender) {
-                guard.current += event.guard_damage;
+        let frames = calculate_hitstop(&event);
+
+        // Freeze both entities
+        commands.entity(event.attacker).insert(Hitstop {
+            frames_remaining: frames,
+            total_frames: frames,
+        });
+        commands.entity(event.defender).insert(Hitstop {
+            frames_remaining: frames,
+            total_frames: frames,
+        });
+    }
+}
+
+/// Tick down hitstop, remove when complete
+pub fn process_hitstop(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut Hitstop)>,
+) {
+    for (entity, mut hitstop) in query.iter_mut() {
+        if hitstop.frames_remaining > 0 {
+            hitstop.frames_remaining -= 1;
+        } else {
+            commands.entity(entity).remove::<Hitstop>();
+        }
+    }
+}
+
+/// Prevent state progression during hitstop
+pub fn freeze_during_hitstop(
+    mut query: Query<&mut StateTimer, With<Hitstop>>,
+) {
+    // Don't tick timers on frozen entities
+}
+```
+
+**Integration:**
+- Modify existing systems to skip entities with `Hitstop` component
+- Add screen shake during hitstop (2px for lights, 5px for heavies)
+- Allow cancels during hitstop window (enables tight combo timing)
+
+**Industry standard values:**
+- Light attacks: 8-9 frames
+- Heavy attacks: 13-14 frames
+- Counter hits: Add 3 frames
+- Blocked hits: Reduce by 3 frames
+- Parries: 10-12 frames
+
+**Test:** Every hit should feel chunky with clear impact moment
+
+#### 5.2 Hitbox Sizing (Week 1)
+
+**Reference:** `docs/todo/HITBOX_HURTBOX_SIZING.md`
+
+**Why critical:** Current hitboxes are 30-50% smaller than Street Fighter standards, making attacks feel unrewarding
+
+**Changes to `src/components/movelist.rs`:**
+
+```rust
+// Light attacks: 1.0x → 1.5x character width
+Jab:        Vec2::new(80.0, 80.0)   → Vec2::new(120.0, 95.0)
+Dash Jab:   Vec2::new(90.0, 80.0)   → Vec2::new(130.0, 95.0)
+Low Poke:   Vec2::new(85.0, 55.0)   → Vec2::new(125.0, 65.0)
+Step Jab:   Vec2::new(75.0, 80.0)   → Vec2::new(115.0, 95.0)
+
+// Heavy attacks: 1.5x → 2.0-2.5x character width
+Heavy:      Vec2::new(120.0, 105.0) → Vec2::new(170.0, 130.0)
+Lunge:      Vec2::new(130.0, 105.0) → Vec2::new(190.0, 130.0)
+Sweep:      Vec2::new(145.0, 45.0)  → Vec2::new(200.0, 50.0)
+Counter:    Vec2::new(110.0, 105.0) → Vec2::new(160.0, 130.0)
+
+// Grab: 0.8x → 1.5x character width (most important!)
+Grab:       Vec2::new(65.0, 105.0)  → Vec2::new(120.0, 120.0)
+```
+
+**Implementation:**
+1. Update all hitbox sizes in `Movelist::default_character()`
+2. Adjust offsets if needed (push hitboxes further forward)
+3. Test with F1 debug view
+4. Verify hitboxes don't overlap own hurtbox
+
+**Test:** Attacks should feel generous, grabs should be threatening, spacing should still matter
+
+#### 5.3 Short Combo System (Weeks 2-3)
+
+**Reference:** `docs/todo/SHORT_COMBO_SYSTEM.md`
+
+**Why critical:** "2-4 clean hits can kill" is core philosophy, but only Light → Light exists
+
+**Combo routes to implement:**
+
+```
+1. Light Confirm:  Light → Light → Heavy  (35-40% damage)
+2. Heavy Punish:   Counter Heavy → Light → Heavy  (50-60% damage)
+3. Light Pressure: Light → Light → Grab  (30% damage + setup)
+4. Quick Damage:   Light → Heavy  (30% damage)
+```
+
+**New components:**
+
+```rust
+// src/components/combo.rs
+#[derive(Component)]
+pub struct InputBuffer {
+    pub buffer: Vec<(AttackType, u8)>,  // (input, frames_ago)
+    pub window: u8,  // 6-8 frames
+}
+
+#[derive(Component)]
+pub struct ComboState {
+    pub hit_count: u32,
+    pub damage_dealt: f32,
+    pub scaling: f32,  // 1.0 → 0.9 → 0.8 for hits 1-3
+}
+
+// Add to MoveData
+pub struct MoveData {
+    // ... existing fields
+    pub cancellable_into: Vec<AttackType>,
+    pub cancel_window_frames: u32,  // Frames during recovery you can cancel
+}
+```
+
+**New systems:**
+
+```rust
+// src/systems/combo.rs
+
+/// Buffer recent inputs
+pub fn buffer_inputs(
+    mut query: Query<(&CurrentInput, &mut InputBuffer)>,
+) {
+    // Store last 6-8 frames of inputs
+    // Age out old inputs
+}
+
+/// Handle attack cancels during recovery
+pub fn process_cancels(
+    mut query: Query<(&AttackData, &StateTimer, &InputBuffer, &Player)>,
+    mut commands: Commands,
+) {
+    // If in cancel window and buffered input is valid:
+    // - End current attack early
+    // - Start new attack immediately
+    // - Increment combo counter
+}
+
+/// Apply damage scaling
+pub fn apply_combo_scaling(
+    mut query: Query<&mut ComboState>,
+    mut hit_events: EventReader<HitEvent>,
+) {
+    // No scaling hits 1-2
+    // 90% damage hit 3
+    // 80% damage hit 4+
+}
+
+/// Reset combo state
+pub fn reset_combos(
+    mut query: Query<&mut ComboState>,
+    // Reset on block, neutral return, timeout
+) {}
+```
+
+**Cancel rules:**
+- Light → Light (existing, on hit only)
+- Light → Heavy (new, on hit only)
+- Light → Grab (new, on hit or block)
+- Counter Heavy → Light (new, counter hit only)
+
+**Visual feedback:**
+- Hit flash escalation (white → yellow → gold)
+- Screen shake scaling (2px → 5px → 8px)
+- Combo counter UI ("2 HIT!")
+- Sound pitch shift per hit
+
+**Test:** Combos should feel earned and impactful, not memorized
+
+#### Phase 5 Milestone
+
+✅ **Game Feel Complete**
+- Hits have 8-13f hitstop (meaty impact)
+- Hitboxes 50% larger (attacks connect reliably)
+- 4 combo routes working (Light → Heavy, Light → Grab, etc.)
+- 2-4 hit combos deal 30-60% damage
+- Screen shake and visual feedback escalate through combos
+
+**The game should feel better than most fighting games at this point.**
+
+---
+
+### Phase 6: Combat Framework (2-3 weeks)
+
+**Goal:** System supports diverse character archetypes without code duplication
+
+**Reference:** `docs/combat_phases.md` — Build Advantage → Stagger → Finish framework
+
+#### 6.1 Stagger Method Variety (Week 1)
+
+**Core insight:** Multiple paths to Stagger enable character diversity
+
+**Implementation:**
+
+```rust
+// src/components/combat.rs
+#[derive(Component, Debug)]
+pub enum StaggerSource {
+    GuardBreak,      // Existing: Guard meter full
+    CounterHit,      // New: Specific moves Stagger on counter
+    CommandGrab,     // New: Special grab that Staggers
+    ArmorTrade,      // New: Armored move absorbs + connects
+}
+
+#[derive(Component)]
+pub struct Stagger {
+    pub frames_remaining: u32,
+    pub source: StaggerSource,
+}
+
+// Add to AttackProperty enum
+pub enum AttackProperty {
+    Unblockable,
+    LightArmor,
+    StaggersOnCounter,   // NEW: Causes Stagger when lands as counter hit
+    CommandGrab,         // NEW: Unblockable grab that Staggers
+    ArmorStaggers,       // NEW: Staggers if absorbs hit and connects
+}
+```
+
+**New stagger triggers:**
+
+```rust
+// src/systems/damage.rs
+
+/// Check for counter hit stagger
+pub fn apply_counter_stagger(
+    mut hit_events: EventReader<HitEvent>,
+    attack_query: Query<&AttackData>,
+    mut commands: Commands,
+) {
+    for event in hit_events.read() {
+        if event.is_counter_hit {
+            if let Ok(attack) = attack_query.get(event.attacker) {
+                if attack.properties.contains(&AttackProperty::StaggersOnCounter) {
+                    commands.entity(event.defender).insert(Stagger {
+                        frames_remaining: 30,
+                        source: StaggerSource::CounterHit,
+                    });
+                }
             }
         }
     }
 }
 
-/// Triggers guard break when meter fills
-pub fn check_guard_break(
-    mut commands: Commands,
-    mut guard_query: Query<(Entity, &GuardMeter), Changed<GuardMeter>>,
-    mut break_events: EventWriter<GuardBreakEvent>,
+/// Check for armor trade stagger
+pub fn apply_armor_trade_stagger(
+    // If armored move absorbs hit and connects, stagger opponent
+) {}
+```
+
+**Stagger duration by source:**
+- Guard Break: 40 frames (existing)
+- Counter Hit: 30 frames
+- Command Grab: 35 frames
+- Armor Trade: 30 frames
+
+**Test:** Multiple paths to Stagger should feel distinct
+
+#### 6.2 Finish Type Variety (Week 1)
+
+**Core insight:** Different kill animations/mechanics enable character expression
+
+**Implementation:**
+
+```rust
+// src/components/combat.rs
+#[derive(Clone, Copy, Debug)]
+pub enum FinishType {
+    Standard,          // Single heavy strike (20f wind-up, 4f parry window)
+    ExecutionCombo,    // Auto 3-4 hit sequence
+    Grapple,           // Command grab kill (no parry possible)
+    Counter,           // Counter stance, attack = death
+}
+
+// Add to CharacterData
+pub struct CharacterData {
+    pub name: String,
+    pub movelist: Movelist,
+    pub stance: Option<StanceData>,
+    pub finish_type: FinishType,  // NEW
+}
+```
+
+**For MVP:**
+- Implement **Standard** finish (existing)
+- Build framework interface for others
+- Document how to add ExecutionCombo/Grapple/Counter
+
+**System interface:**
+
+```rust
+// src/systems/decisive_blow.rs
+
+/// Trigger appropriate finish based on character's finish_type
+pub fn execute_decisive_blow(
+    character_data: &CharacterData,
+    target: Entity,
 ) {
-    for (entity, guard) in guard_query.iter_mut() {
-        if guard.current >= guard.max {
-            break_events.send(GuardBreakEvent { entity });
-            // Add Staggered component, reset guard
+    match character_data.finish_type {
+        FinishType::Standard => execute_standard_finish(target),
+        FinishType::ExecutionCombo => execute_combo_finish(target),
+        FinishType::Grapple => execute_grapple_finish(target),
+        FinishType::Counter => execute_counter_finish(target),
+    }
+}
+```
+
+**Test:** Framework exists, Standard finish works, others can be added without touching core code
+
+#### 6.3 Character Mechanic Plugin System (Week 2)
+
+**Core insight:** Characters need unique systems (Penance, Feral, Toxin) without polluting core
+
+**Implementation:**
+
+```rust
+// src/plugins/character_mechanics.rs
+
+/// Trait for character-specific mechanics
+pub trait CharacterMechanic: Send + Sync + 'static {
+    fn update(&mut self, ctx: &MechanicContext);
+    fn on_hit(&mut self, hit: &HitEvent);
+    fn on_block(&mut self, block: &BlockEvent);
+    fn damage_modifier(&self) -> f32;  // Multiplier for damage dealt
+}
+
+/// Context provided to mechanics
+pub struct MechanicContext {
+    pub entity: Entity,
+    pub time: f32,
+    pub health: &Health,
+    pub guard: &GuardMeter,
+}
+
+// Example mechanic (for future Flagellant character)
+#[derive(Component)]
+pub struct PenanceMechanic {
+    pub meter: f32,  // 0.0 - 1.0
+    pub decay_rate: f32,
+}
+
+impl CharacterMechanic for PenanceMechanic {
+    fn update(&mut self, ctx: &MechanicContext) {
+        // Decay over time
+        self.meter = (self.meter - self.decay_rate * ctx.time).max(0.0);
+    }
+
+    fn on_hit(&mut self, hit: &HitEvent) {
+        // Build Penance when taking damage (not blocking)
+        if !hit.was_blocked {
+            self.meter = (self.meter + 0.2).min(1.0);
+        }
+    }
+
+    fn damage_modifier(&self) -> f32 {
+        if self.meter >= 1.0 {
+            2.0  // Double damage at full Penance
+        } else {
+            1.0
         }
     }
 }
+```
 
-/// Depletes guard meter over time when not blocking
-pub fn drain_guard_meter(
+**Generic system:**
+
+```rust
+// src/systems/character_mechanics.rs
+
+/// Update all active character mechanics
+pub fn update_character_mechanics(
+    mut query: Query<&mut dyn CharacterMechanic>,
     time: Res<Time>,
-    mut guard_query: Query<&mut GuardMeter, Without<Blocking>>,
 ) {
-    for mut guard in guard_query.iter_mut() {
-        guard.current = (guard.current - 0.05 * time.delta_seconds()).max(0.0);
-    }
+    // Call update on all active mechanics
 }
 ```
 
-**Key principles:**
-- Descriptive names: you know what it does from the name
-- Queries are specific: only entities that need this logic
-- Events decouple systems: guard break triggers stagger elsewhere
-- No hidden state: all data visible in components
+**For MVP:**
+- Build the **interface** (trait + plugin pattern)
+- Don't implement specific mechanics yet
+- Prove concept with simple example
 
-### 4. Plugin Organization
+**Test:** Can add new mechanic without editing core combat systems
 
-Group related systems into plugins for clear boundaries.
+#### 6.4 Data-Driven Character Loading (Week 2-3)
+
+**Core insight:** Characters should be data, not code
+
+**RON file format:**
 
 ```rust
-// src/plugins/combat_mechanics.rs
-pub struct CombatMechanicsPlugin;
+// assets/data/characters/conscript.ron
+(
+    name: "The Conscript",
+    archetype: Pressure,
 
-impl Plugin for CombatMechanicsPlugin {
-    fn build(&self, app: &mut App) {
-        app
-            .add_event::<HitEvent>()
-            .add_event::<ParryEvent>()
-            .add_event::<GuardBreakEvent>()
-            .add_systems(Update, (
-                // Guard systems
-                fill_guard_on_block,
-                drain_guard_meter,
-                check_guard_break,
+    moves: {
+        "neutral_light": (
+            startup: 5,
+            active: 2,
+            recovery: 10,
+            damage: 8.0,
+            on_block: -2,
+            hitbox_offset: Vec2(40.0, 0.0),
+            hitbox_size: Vec2(120.0, 95.0),
+            hitstop_on_hit: 9,
+            hitstop_on_block: 6,
+            cancellable_into: [Light, Heavy],
+            properties: [],
+        ),
+        // ... 8 more moves
+    },
 
-                // Initiative systems
-                grant_initiative_on_hit,
-                apply_initiative_frame_advantage,
-                decay_initiative,
-            ).chain());  // Run in order
-    }
-}
+    stance: Some((
+        type: DrillForm,
+        guard_damage_reduction: 0.7,
+    )),
+
+    finish_type: Standard,
+)
 ```
 
-### 5. Extensibility Pattern: Character Loading
-
-New characters = new `.ron` file. Core systems unchanged.
+**Loading system:**
 
 ```rust
-// System that loads any character from data
-pub fn spawn_character(
+// src/data/character_data.rs
+use serde::Deserialize;
+
+#[derive(Deserialize, Asset, TypePath)]
+pub struct CharacterData {
+    pub name: String,
+    pub archetype: String,
+    pub moves: HashMap<String, MoveData>,
+    pub stance: Option<StanceData>,
+    pub finish_type: FinishType,
+}
+
+// src/systems/character_loader.rs
+pub fn load_character_from_file(
+    asset_server: Res<AssetServer>,
+) -> Handle<CharacterData> {
+    asset_server.load("data/characters/conscript.ron")
+}
+
+pub fn spawn_character_from_data(
     commands: &mut Commands,
     character_data: &CharacterData,
     player: Player,
@@ -270,518 +649,565 @@ pub fn spawn_character(
     commands.spawn((
         Character,
         player,
-        HealthState::new(),
+        Health::default(),
         GuardMeter::default(),
+        Movelist::from_data(&character_data.moves),
         Transform::from_translation(position.extend(0.0)),
-        // Load moves from character_data into MoveSet component
-        MoveSet::from_data(&character_data.moves),
-        // Load stance if character has one
+        // ... other components
     )).id()
 }
 ```
 
-Adding "The Shade" character:
-1. Create `assets/data/characters/shade.ron`
-2. Add sprites to `assets/sprites/characters/shade/`
-3. Done. No code changes.
+**Hot reload:**
+- Use Bevy's asset system
+- Detect changes to `.ron` files
+- Reload character data without restart
+- Apply to existing entities
+
+**Test:** Editing `conscript.ron` changes character without recompiling
+
+#### Phase 6 Milestone
+
+✅ **Framework Complete**
+- Multiple stagger methods (Guard Break, Counter Hit, Command Grab, Armor Trade)
+- Finish type system (interface for 4 types, Standard implemented)
+- Character mechanic plugin interface (extensible without core changes)
+- Data-driven character loading (RON → CharacterData → Entity)
+- Hot reload working
+
+**The system can now support 10 diverse characters without code changes.**
 
 ---
 
-## Phase-by-Phase Implementation
+### Phase 7: The Conscript (2-3 weeks)
 
-### Phase 0: Project Initialization (Day 1)
+**Goal:** One complete, balanced character that feels incredible
 
-**Goal:** Repository setup, dependencies, hot-reload working.
+**Why The Conscript?**
 
-**Tasks:**
-- Create Bevy project with `cargo init`
-- Add dependencies:
-  ```toml
-  [dependencies]
-  bevy = "0.14"
-  bevy_inspector_egui = "0.25"
-  bevy_framepace = "0.17"
-  serde = { version = "1.0", features = ["derive"] }
-  ron = "0.8"
-  ```
-- Create folder structure
-- Setup hot-reload for `.ron` files
-- Verify: Change a value in RON, see it update without restart
+From `docs/roster.md`:
+- Balanced archetype (good at everything, great at nothing)
+- Tutorial character (players learn fundamentals through him)
+- Standard patterns (Pressure → Guard Break → Standard finish)
+- Simple stance (Drill Form: defensive, reduces guard damage)
 
-**Deliverable:** Empty window, 60 FPS, hot-reload confirmed.
+**Perfect MVP character:** Proves core systems without exotic mechanics
 
----
+#### 7.1 Complete Movelist (Week 1)
 
-### Phase 1: Movement Foundation (Week 1)
+**Implement all 9 moves with proper data:**
 
-**Goal:** Two colored rectangles that move beautifully. Fast, responsive, crosses stage in ~2 seconds.
-
-#### 1.1 Basic Setup
-- Camera (1280x720 viewport)
-- Stage boundaries (entity with collision)
-- Two rectangles (Player 1 red, Player 2 blue)
-- Keyboard input mapping:
-  - P1: WASD movement, JKL actions
-  - P2: Arrow keys movement, Numpad 1/2/3 actions
-
-#### 1.2 Walk Movement
-**Components:**
-```rust
-Velocity(Vec2)
-MaxSpeed(f32)  // Loaded from character data
-Player(u8)     // 1 or 2
-```
-
-**System:**
-```rust
-fn walk_movement(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&Player, &MaxSpeed, &mut Velocity)>,
-) {
-    // Apply velocity from input
-    // Clamp to MaxSpeed
-}
-```
-
-**Data:** `assets/data/game_config.ron`
 ```ron
+// assets/data/characters/conscript.ron
 (
-    walk_speed: 300.0,  // pixels per second
-    stage_width: 1000.0,
+    name: "The Conscript",
+    archetype: Pressure,
+
+    moves: {
+        // === LIGHT ATTACKS ===
+
+        "neutral_light": (
+            name: "Jab",
+            startup: 5,
+            active: 2,
+            recovery: 10,
+            damage: 8.0,
+            on_block: -2,
+            hitbox_offset: Vec2(40.0, 0.0),
+            hitbox_size: Vec2(120.0, 95.0),
+            hitstop_on_hit: 9,
+            hitstop_on_block: 6,
+            cancellable_into: [Light, Heavy],
+            properties: [],
+        ),
+
+        "forward_light": (
+            name: "Advancing Jab",
+            startup: 4,
+            active: 2,
+            recovery: 10,
+            damage: 6.0,
+            on_block: -2,
+            hitbox_offset: Vec2(50.0, 0.0),
+            hitbox_size: Vec2(130.0, 95.0),
+            hitstop_on_hit: 9,
+            cancellable_into: [Light, Heavy],
+            properties: [],
+            movement: Some(Forward(50.0, 15.0)),  // distance, speed
+        ),
+
+        "down_light": (
+            name: "Low Poke",
+            startup: 6,
+            active: 2,
+            recovery: 11,
+            damage: 7.0,
+            on_block: -3,
+            hitbox_offset: Vec2(40.0, -30.0),
+            hitbox_size: Vec2(125.0, 65.0),
+            hitstop_on_hit: 9,
+            cancellable_into: [Light],
+            properties: [],
+        ),
+
+        "back_light": (
+            name: "Retreating Jab",
+            startup: 5,
+            active: 2,
+            recovery: 9,
+            damage: 6.0,
+            on_block: 1,  // Safe on block!
+            hitbox_offset: Vec2(35.0, 0.0),
+            hitbox_size: Vec2(115.0, 95.0),
+            hitstop_on_hit: 9,
+            cancellable_into: [],  // Can't cancel (defensive)
+            properties: [],
+            movement: Some(Back(30.0, 15.0)),
+        ),
+
+        // === HEAVY ATTACKS ===
+
+        "neutral_heavy": (
+            name: "Overhead Strike",
+            startup: 11,
+            active: 4,
+            recovery: 18,
+            damage: 18.0,
+            on_block: -8,
+            hitbox_offset: Vec2(50.0, 10.0),
+            hitbox_size: Vec2(170.0, 130.0),
+            hitstop_on_hit: 13,
+            hitstop_on_block: 10,
+            cancellable_into: [],
+            properties: [LightArmor],  // Absorbs one light hit
+        ),
+
+        "forward_heavy": (
+            name: "Lunging Strike",
+            startup: 9,
+            active: 4,
+            recovery: 18,
+            damage: 15.0,
+            on_block: -6,
+            hitbox_offset: Vec2(60.0, 10.0),
+            hitbox_size: Vec2(190.0, 130.0),
+            hitstop_on_hit: 13,
+            cancellable_into: [],
+            properties: [],
+            movement: Some(Forward(80.0, 15.0)),
+        ),
+
+        "down_heavy": (
+            name: "Sweep",
+            startup: 13,
+            active: 4,
+            recovery: 20,
+            damage: 20.0,
+            on_block: -10,
+            hitbox_offset: Vec2(50.0, -35.0),
+            hitbox_size: Vec2(200.0, 50.0),
+            hitstop_on_hit: 14,
+            cancellable_into: [],
+            properties: [],
+        ),
+
+        "back_heavy": (
+            name: "Defensive Strike",
+            startup: 10,
+            active: 4,
+            recovery: 16,
+            damage: 16.0,
+            on_block: -4,  // Safer than normal heavy
+            hitbox_offset: Vec2(45.0, 0.0),
+            hitbox_size: Vec2(160.0, 130.0),
+            hitstop_on_hit: 13,
+            cancellable_into: [],
+            properties: [StaggersOnCounter],  // Staggers on counter hit!
+            movement: Some(Back(40.0, 15.0)),
+        ),
+
+        // === GRAB ===
+
+        "neutral_grab": (
+            name: "Command Grab",
+            startup: 10,
+            active: 2,
+            recovery: 20,
+            damage: 12.0,
+            on_block: 0,
+            hitbox_offset: Vec2(35.0, 0.0),
+            hitbox_size: Vec2(120.0, 120.0),
+            hitstop_on_hit: 11,
+            cancellable_into: [],
+            properties: [Unblockable, CommandGrab],  // Causes Stagger
+        ),
+    },
+
+    stance: Some((
+        type: DrillForm,
+        entry: HoldBlock,  // Hold block for 10 frames to enter
+        guard_damage_reduction: 0.7,  // Take 30% less guard damage
+        movement_speed: 0.8,  // Can walk slowly in stance
+    )),
+
+    finish_type: Standard,
 )
 ```
 
-**Test:** Walk left/right. Should feel snappy, cross stage in ~2 seconds.
+**Frame data tuning:**
+- Test pressure flow (Light → Light → mixup)
+- Test punish windows (whiff Heavy = punishable)
+- Ensure risk/reward feels fair
+- All combos should work (Light → Heavy, Light → Grab, etc.)
 
-#### 1.3 Step and Backdash
-**Components:**
+#### 7.2 Drill Form Stance (Week 2)
+
+**Implementation:**
+
 ```rust
-StepState { frames_remaining: u32 }
-BackdashState { frames_remaining: u32, has_iframes: bool }
-```
-
-**System:**
-```rust
-fn execute_step(
-    mut commands: Commands,
-    mut query: Query<(Entity, &mut Transform, &mut StepState)>,
-) {
-    // Move quickly over 6 frames
-    // Remove component when done
-}
-```
-
-**Test:** Step feels like commitment (brief moment you can't act). Backdash feels safe but loses space.
-
-#### 1.4 State Machine Core
-**Component:**
-```rust
-enum CharacterState {
-    Idle,
-    Walking,
-    Stepping,
-    Backdashing,
-    // More added in Phase 2
-}
-
-struct StateTimer {
-    elapsed: u32,
-    duration: u32,
-}
-```
-
-**System:**
-```rust
-fn state_machine_transitions(
-    mut query: Query<(&mut CharacterState, &mut StateTimer)>,
-) {
-    // Tick timers
-    // Transition when timer expires
-}
-```
-
-**Milestone:** Two players control rectangles smoothly. Movement feels **fast and intentional**.
-
----
-
-### Phase 2: Core Combat Triangle (Weeks 2-3)
-
-**Goal:** Attack/Grab vs Block/Parry/Evade working. Exchanges feel **responsive and meaningful**.
-
-#### 2.1 Hitbox/Hurtbox System
-**Components:**
-```rust
-Hitbox {
-    rect: Rect,
-    active: bool,
-    damage: StateDelta,
-    properties: Vec<AttackProperty>,  // LightArmor, Unblockable, etc
-}
-
-Hurtbox {
-    rect: Rect,
-}
-```
-
-**System:**
-```rust
-fn detect_hits(
-    hitbox_query: Query<(Entity, &Hitbox, &GlobalTransform)>,
-    hurtbox_query: Query<(Entity, &Hurtbox, &GlobalTransform)>,
-    mut hit_events: EventWriter<HitEvent>,
-) {
-    // AABB collision detection
-    // Send HitEvent on collision
-}
-```
-
-#### 2.2 Attack Basics
-**States:** `Attacking { move_id, phase: AttackPhase }`
-```rust
-enum AttackPhase {
-    Startup { frames_remaining: u32 },
-    Active { frames_remaining: u32 },
-    Recovery { frames_remaining: u32 },
-}
-```
-
-**Data:** Loaded from character RON (see earlier example).
-
-**System:**
-```rust
-fn progress_attack_animation(
-    mut query: Query<(&mut CharacterState, &mut StateTimer, &mut Hitbox)>,
-) {
-    // Startup → Active: enable hitbox
-    // Active → Recovery: disable hitbox
-    // Recovery → Idle: clear state
-}
-```
-
-**Frame Data (in RON):**
-- Light: 6f startup, 2f active, 10f recovery
-- Heavy: 14f startup, 4f active, 18f recovery
-
-#### 2.3 Block and Guard Meter
-**Components:**
-```rust
-Blocking { started_frame: u32 }
-GuardMeter { current: f32, max: f32 }
-```
-
-**System:** (see earlier guard example)
-
-#### 2.4 Parry
-**State:** `ParryAttempt { window_remaining: u32 }`
-
-**System:**
-```rust
-fn check_parry_success(
-    mut hit_events: EventReader<HitEvent>,
-    parry_query: Query<&ParryAttempt>,
-    mut parry_events: EventWriter<ParryEvent>,
-) {
-    for hit in hit_events.read() {
-        if parry_query.get(hit.defender).is_ok() {
-            // Parry succeeded!
-            parry_events.send(ParryEvent { defender: hit.defender });
-            // Brief time freeze, grant initiative, etc
-        }
+// src/components/stance.rs
+#[derive(Component, Debug)]
+pub enum Stance {
+    DrillForm {
+        guard_damage_reduction: f32,
+        movement_speed: f32,
+        active: bool,
     }
 }
-```
 
-**Feel:** Parry success = screen freeze for 3 frames, distinct sound, visual flash.
+// src/systems/stance.rs
 
-#### 2.5 Grab and Evade
-- Grab: Unblockable, loses to attacks (stuffed during startup)
-- Evade: 4 frames i-frames, directional
-
-**Milestone:** The triangle works. Players can have real exchanges. Reads matter.
-
----
-
-### Phase 3: Initiative System (Week 4)
-
-**Goal:** Momentum matters. Landing a hit gives tangible advantage.
-
-#### 3.1 Initiative Tracking
-**Component:**
-```rust
-Initiative  // Tag component
-```
-
-**Resource:**
-```rust
-InitiativeHolder(Option<Entity>)
-```
-
-**Systems:**
-- `grant_initiative_on_hit` — Hit events give Initiative
-- `grant_initiative_on_parry` — Parry events give Initiative
-- `revoke_initiative_on_whiff` — Missing attacks loses Initiative
-
-#### 3.2 Frame Advantage
-**System:**
-```rust
-fn apply_initiative_frame_advantage(
-    initiative: Res<InitiativeHolder>,
-    mut query: Query<(Entity, &mut StateTimer)>,
+/// Enter stance when conditions met
+pub fn enter_drill_form(
+    mut query: Query<(&Player, &mut Stance, &CharacterState)>,
+    input: Res<CurrentInputs>,
 ) {
-    if let Some(holder) = initiative.0 {
-        if let Ok((entity, mut timer)) = query.get_mut(holder) {
-            // Reduce startup by 2 frames
-            timer.duration = timer.duration.saturating_sub(2);
-        }
-    }
+    // Hold block for 10 frames → enter Drill Form
 }
-```
 
-**Visual:** Faint ink trail behind Initiative holder.
-
-**Milestone:** Players feel when they're "winning" neutral. Initiative flows naturally.
-
----
-
-### Phase 4: Health, Breaths, Momentum (Weeks 5-6)
-
-**Goal:** Matches have structure. Kills are earned. Drama builds.
-
-#### 4.1 Health States
-**Component:**
-```rust
-enum HealthLevel {
-    Whole,
-    Cut,
-    Wounded,
-    Broken,
-}
-```
-
-**System:**
-```rust
-fn apply_damage(
-    mut hit_events: EventReader<HitEvent>,
-    mut health_query: Query<&mut HealthState>,
+/// Apply stance effects
+pub fn apply_drill_form_effects(
+    mut guard_events: EventReader<HitEvent>,
+    stance_query: Query<&Stance>,
 ) {
-    for hit in hit_events.read() {
-        if let Ok(mut health) = health_query.get_mut(hit.defender) {
-            health.current = health.current.decrease_by(hit.damage);
-            // Visual: change sprite/animation
-        }
-    }
+    // Reduce guard damage by 30% while in stance
 }
-```
 
-**No health bar.** Visual tells story (stance changes, breathing visible).
-
-#### 4.2 Breath System (Round Management)
-**Resource:**
-```rust
-MatchState {
-    p1_breaths: u8,
-    p2_breaths: u8,
-    state: MatchPhase,
-}
-```
-
-**System:**
-```rust
-fn check_for_death(
-    mut match_state: ResMut<MatchState>,
-    health_query: Query<(&Player, &HealthState)>,
-    mut breath_events: EventWriter<BreathTakenEvent>,
+/// Exit stance
+pub fn exit_drill_form(
+    mut query: Query<&mut Stance>,
+    input: Res<CurrentInputs>,
 ) {
-    // If health = Defeated, decrement breaths, send event
-}
-
-fn reset_after_breath(
-    mut breath_events: EventReader<BreathTakenEvent>,
-    mut commands: Commands,
-    // Reset positions, health, guard, initiative
-) {
-    // 1.5 second pause
-    // Visual: "BREATH" indicator
-    // Grant Momentum to killer
+    // Release block or press attack → exit stance
 }
 ```
 
-#### 4.3 Momentum State
-**Component:**
-```rust
-Momentum {
-    timer: f32,  // 3 seconds
-    guard_bonus: f32,  // +10%
-}
-```
+**Visual:**
+- Shield raised, centered posture
+- Slight glow on shield when active
+- Movement animation slower
 
-**System:**
-- Start with Initiative
-- Visual indicator (forward energy)
-- Ends on hit or timeout
+**Purpose:** Teaches stance mechanics without complex options
 
-#### 4.4 Desperation State
-**Trigger:** Down 0-2 in Breaths.
+#### 7.3 Visual Identity (Week 2-3)
 
-**Component:**
-```rust
-Desperation {
-    damage_multiplier: f32,  // 1.15
-}
-```
+**Art requirements:**
+- Sprite per state (Idle, Walk, Attack, Block, Stagger, Death)
+- Can be simple but distinctive
+- **Shield on arm** (visual identifier)
+- Clear silhouette (medium build, balanced stance)
 
-**Effect:** Activate Final Stand immediately, +15% damage.
+**Color palette:**
+- Armor: Gray/steel blue
+- Shield: Bronze/copper
+- Accent: Red cloth
 
-#### 4.5 Decisive Blow
-**Conditions:** Target is (Wounded OR Broken) AND Staggered.
+**Effects:**
+- Hit sparks (white flash on hit, yellow on counter)
+- Guard effect (blue shield glow on block)
+- Stance indicator (persistent shield glow in Drill Form)
+- Decisive Blow wind-up (screen darkens, character glows)
 
-**System:**
-```rust
-fn check_decisive_blow_conditions(
-    mut commands: Commands,
-    health_query: Query<(&HealthState, &CharacterState)>,
-    // If conditions met, add DecisiveBlowAvailable component
-)
-```
+**Audio:**
+- 4 hit sounds (light, heavy, counter, decisive)
+- 2 movement sounds (footstep, dash)
+- Parry chime (bell-like)
+- Stance sounds (enter/exit)
+- Grab sound (heavier impact)
 
-**Execution:**
-- Heavy input becomes Decisive Blow
-- 24 frame wind-up (telegraphed)
-- Defender can attempt Final Parry (4f window)
-- Success = instant kill
+**Test:** Character feels like "The Conscript" (soldier, practical, reliable)
 
-**Feel:** Silence before strike. Screen holds. Ink splatter. Death.
+#### 7.4 Balance & Polish (Week 3)
 
-**Milestone:** Matches flow naturally. Momentum shifts. Comebacks possible. Kills feel **earned**.
+**Balance testing:**
+- Mirror match should be 50/50 skill-based
+- All 9 moves should be useful in different situations
+- Combos should deal 30-60% damage depending on route
+- Stance should feel valuable but not mandatory
+- No dominant strategy
+
+**Polish:**
+- All visual feedback working
+- All audio triggering correctly
+- Hitstop feels consistent
+- Combos flow naturally
+- UI shows all relevant info (breaths, health state, round timer)
+
+**Playtesting goals:**
+- 10 matches minimum
+- Identify frustrations
+- Tune frame data
+- Adjust damage values
+- Refine combo routes
+
+#### Phase 7 Milestone
+
+✅ **The Conscript Complete**
+- All 9 moves implemented and balanced
+- Drill Form stance functional
+- Complete visual/audio identity
+- Loaded from `conscript.ron` data file
+- Mirror match is fun, strategic, and balanced
+- Game feels incredible to play
+
+**The vertical slice is complete. Ship it.**
 
 ---
 
-### Phase 5: First Character Complete (Weeks 7-8)
+## MVP Definition of Done
 
-**Goal:** Ronin is fully playable with all moves and Drawn Blade stance.
+The MVP is complete when these criteria are met:
 
-#### 5.1 Full Move Set
-Load from `assets/data/characters/ronin.ron`:
-- Neutral/Forward/Back Light
-- Neutral/Forward/Back Heavy
-- Grab
+### ✅ Game Feel Checklist
+- [ ] Hits have 8-13f hitstop (feels meaty and impactful)
+- [ ] Hitboxes 50% larger (attacks connect reliably)
+- [ ] Light → Light → Heavy combo deals 35-40% damage
+- [ ] Light → Heavy combo deals 28-32% damage
+- [ ] Screen shake escalates through combos (2px → 5px → 8px)
+- [ ] Hit flash escalates through combos (white → yellow → gold)
+- [ ] Combo counter displays hit count
+- [ ] Every hit feels satisfying
 
-All frame data, hitboxes, damage defined in data.
+### ✅ Framework Checklist
+- [ ] Stagger triggers from 4 sources (Guard Break, Counter Hit, Command Grab, Armor Trade)
+- [ ] Finish type system supports 4 types (Standard implemented, others documented)
+- [ ] Character mechanic plugin system exists (trait + example)
+- [ ] Character loads from RON file
+- [ ] Hot reload works for character data
+- [ ] New attack properties can be added without touching core systems
 
-#### 5.2 Drawn Blade Stance
-**Component:**
-```rust
-StanceActive {
-    stance_type: StanceType,
-    guard_drain_rate: f32,
-}
-```
+### ✅ Conscript Checklist
+- [ ] All 9 moves implemented with correct frame data
+- [ ] All combo routes work (Light → Light → Heavy, Light → Heavy, Light → Grab, Counter → combo)
+- [ ] Drill Form stance reduces guard damage by 30%
+- [ ] Character has distinct visual identity (shield, soldier aesthetic)
+- [ ] Audio feedback for all actions
+- [ ] Mirror match is balanced and fun
 
-**System:**
-- Hold Heavy → enter stance
-- Drain Guard while held
-- Release → fast slash
-- Cancel → return to neutral
+### ✅ Match Flow Checklist
+- [ ] Match starts with character select (even if only Conscript available)
+- [ ] 3 breaths per player
+- [ ] Rounds last 20-40 seconds
+- [ ] Full match lasts 2-3 minutes
+- [ ] Momentum state works (killer has advantage next breath)
+- [ ] Desperation state works (down 0-2 has damage boost + Final Stand)
+- [ ] Decisive Blow available when conditions met
+- [ ] Final Parry window works (4f tight timing)
+- [ ] Victory screen shows winner
 
-#### 5.3 Visual/Audio Polish (Placeholder)
-- Simple sprite (can be stick figure with sword)
-- Hit effects (white flash, ink splatter)
-- Sound effects (movement, attacks, parry chime)
-
-**Milestone:** Ronin is complete. Mirror matches work. Game loop is fully playable.
-
----
-
-### Phase 6: Roster Expansion (Weeks 9-11)
-
-**Pattern:** Each character is a new `.ron` file + sprites. No core system changes.
-
-#### Add Characters:
-1. **The Monk** — Counter-attacker, Open Palm stance
-2. **The Oni** — Heavy armor, Demon's Patience stance
-3. **The Shade** — Mobile mixup, Flicker stance
-
-**Test:** Each character feels distinct. Matchups create variety.
-
----
-
-### Phase 7: Audio-Visual Polish (Weeks 12-13)
-
-**Goal:** Game looks/sounds like Fudoshin.
-
-- Ink-brush sprites
-- Stage backgrounds (minimal)
-- Ambient soundscape (wind, rain, silence)
-- Screen effects (hitstop, shake, slowdown)
-- UI (Breath indicators only)
+### ✅ Player Experience Checklist
+- [ ] Two players can sit down and play immediately
+- [ ] Controls are responsive (input → action in 1-2 frames)
+- [ ] Kills feel earned through accumulated advantage
+- [ ] Comebacks are possible through Desperation/Final Stand
+- [ ] Players can identify what went wrong when they lose
+- [ ] Spectators can follow what's happening
+- [ ] F1 debug view shows hitboxes, frame data, game state
 
 ---
 
-### Phase 8: Modes and Completion (Weeks 14-15)
+## Revised Timeline
 
-- Versus mode (character select, best of 3)
-- Training mode (frame data display, dummy control)
-- Tutorial (movement, triangle, Initiative, Decisive Blow)
+| Phase | Focus | Estimated Time |
+|-------|-------|----------------|
+| **5** | Game Feel (hitstop, hitboxes, combos) | 2-3 weeks |
+| **6** | Combat Framework (stagger variety, finish types, data loading) | 2-3 weeks |
+| **7** | The Conscript (complete character) | 2-3 weeks |
 
-**Definition of Done:** Two players can sit down, learn, compete. Game feels **fast, responsive, mentally engaging**.
+**Total MVP:** 6-9 weeks (1.5-2 months)
+
+**Deliverable:** A vertical slice that proves Fudoshin works
+
+---
+
+## Post-MVP Scaling
+
+Once the MVP is complete, adding characters becomes straightforward:
+
+### Character Addition Workflow
+
+1. **Design** (1-2 days)
+   - Choose Advantage/Stagger/Finish combination from Combat Phases
+   - Design unique mechanic (if needed)
+   - Draft movelist
+
+2. **Data File** (1 day)
+   - Create `assets/data/characters/{name}.ron`
+   - Define 9 moves with frame data
+   - Configure stance (if any)
+   - Set finish type
+
+3. **Character Mechanic** (2-3 days, if unique)
+   - Implement mechanic using plugin system
+   - Examples: Penance (Flagellant), Feral (Beast), Toxin (Apothecary)
+
+4. **Art** (3-5 days)
+   - Sprites for 6 states (Idle, Walk, Attack, Block, Stagger, Death)
+   - Effects (hit sparks, stance indicators)
+   - Audio (4-5 sounds)
+
+5. **Balance** (2-3 days)
+   - Test vs all existing characters
+   - Tune frame data, damage, hitboxes
+   - Refine unique mechanic
+
+**Estimated time per character:** 1-2 weeks with established framework
+
+### Roster Roadmap Post-MVP
+
+**Phase 8: Second Character Trio** (3-4 weeks)
+- The Butcher (Burst/Command Grab/Grapple)
+- The Duchess (Conditioning/Counter Hit/Standard)
+- Mycella (Setplay/Trap Trigger/Trap Trigger)
+
+**Phase 9: Third Character Trio** (3-4 weeks)
+- The Flagellant (Punish/Armor Trade/Counter)
+- The Courier (Pressure/Guard Break/Execution Combo)
+- The Effigy (Conditioning/Stance Punish/Transformation)
+
+**Phase 10: Final Character Quartet** (4-5 weeks)
+- The Apothecary (Attrition/Guard Break/Standard)
+- The Revenant (Attrition/Armor Trade/Standard)
+- The Beast (Burst/Counter Hit/Transformation)
+- Additional character TBD
+
+**Full 10-character roster:** 10-13 additional weeks after MVP
 
 ---
 
 ## Testing and Validation
 
-### Every Phase:
-- **Does it feel right?** (most important)
-- **Is it responsive?** (input → action in 1-2 frames)
-- **Is it clear?** (can you understand what happened?)
+### Phase 5 Tests (Game Feel)
+- Does hitstop make hits feel meaty?
+- Do attacks connect at expected ranges?
+- Do combos flow naturally?
+- Is input buffer forgiving enough?
+- Does damage scaling feel right?
 
-### Specific Tests:
-- **Movement (Phase 1):** Cross stage in 2 seconds? Snappy?
-- **Parry (Phase 2):** Feels rewarding? Visual/audio punch?
-- **Initiative (Phase 3):** Can you feel who's winning?
-- **Decisive Blow (Phase 4):** Tense? Earned?
+### Phase 6 Tests (Framework)
+- Can you add a new stagger method without editing core systems?
+- Can you add a new finish type without breaking existing code?
+- Does hot reload work for character data?
+- Can you add a character mechanic as a plugin?
 
-### Balance Tuning Workflow:
-1. Play test → identify issue
-2. Open `.ron` file → change values
-3. Hot reload → test immediately
-4. Iterate until it feels right
+### Phase 7 Tests (Conscript)
+- Are all 9 moves useful in different situations?
+- Does Drill Form feel valuable?
+- Is mirror match balanced?
+- Do players understand why they won/lost?
+- Can new players pick up the controls in 5 minutes?
+
+### Balance Tuning Workflow
+
+1. **Playtest** — Two people play 10+ matches
+2. **Identify** — What feels unfair, frustrating, or dominant?
+3. **Edit** — Open `conscript.ron`, change values
+4. **Reload** — Hot reload applies changes
+5. **Test** — Play 5 more matches
+6. **Iterate** — Repeat until balanced
+
+**No compilation required** — balance iteration is fast
 
 ---
 
-## Open Questions
+## Architecture Principles
 
-- **Audio middleware:** Use `bevy_kira_audio` or raw Bevy audio?
-- **Sprite format:** Sprite sheets or individual files?
-- **Online play:** Rollback netcode is Phase 9+ (post-MVP)
+These principles from the original plan remain valid:
 
----
+### 1. Data-Driven Balance
+All tunable values live in `.ron` files. Balance changes = edit text, hot-reload, test.
 
-## Why This Architecture Works
+### 2. Component Composition
+Components are pure data. No methods, no logic.
 
-1. **Separation of concerns** → Systems are simple, testable
-2. **Data-driven** → Balance changes without recompilation
-3. **Composable** → Mix/match components for new characters
-4. **Debuggable** → Inspector shows all state live
-5. **Extensible** → New characters = new data files
-6. **Readable** → System names explain what they do
+### 3. Single-Responsibility Systems
+Each system does one thing. Systems communicate via Events.
+
+### 4. Plugin Organization
+Group related systems into plugins for clear boundaries.
+
+### 5. Extensibility by Default
+New characters = new data file + optional mechanic plugin. Core systems never change.
 
 **The codebase should read like the design doc.**
 
-When you open `src/systems/initiative.rs`, you see:
-- `grant_initiative_on_hit`
-- `revoke_initiative_on_whiff`
-- `apply_initiative_frame_advantage`
+---
 
-Clear. Simple. Robust.
+## Why This Plan Works
+
+### Compared to Original MVP Plan
+
+**Old approach:**
+- 4 half-finished characters
+- Placeholder feel until Phase 7
+- Framework built "as needed"
+- 15+ weeks
+
+**New approach:**
+- 1 complete character
+- Industry-standard feel from day 1
+- Framework proven extensible
+- 6-9 weeks
+
+### Risk Mitigation
+
+**Old risk:** Build 4 characters → discover feel is wrong → rewrite everything
+
+**New risk:** Build foundation → validate with 1 character → scale only when proven
+
+### Value Proposition
+
+After 6-9 weeks, you have:
+- A game that feels better than most fighting games
+- A framework that supports 10 diverse characters
+- One complete, polished character
+- Proof that the vision works
+
+**Then you scale.**
 
 ---
 
-## Next Steps
+## Immediate Next Steps
 
-1. Review this plan — anything unclear or missing?
-2. I'll scaffold the project structure (Cargo.toml, folders, main.rs)
-3. Begin Phase 1: Movement foundation
-4. Iterate on feel until rectangles move beautifully
-5. Build from there
+1. ✅ Review this refactored plan
+2. Start Phase 5.1: Implement hitstop system
+3. Continue Phase 5.2: Fix hitbox sizes
+4. Build Phase 5.3: Expand combo system
+5. Validate game feel improvements
+6. Move to Phase 6: Build framework
+7. Complete Phase 7: Finish The Conscript
 
-Ready to begin?
+**Goal:** Vertical slice that proves Fudoshin in 6-9 weeks
+
+---
+
+## References
+
+- `docs/combat_phases.md` — Character design framework
+- `docs/roster.md` — 10-character roster designs
+- `docs/gameplay_mechanics.md` — Complete mechanics reference
+- `docs/todo/HITSTOP_IMPLEMENTATION.md` — Hitstop/freeze frames
+- `docs/todo/HITBOX_HURTBOX_SIZING.md` — Industry-standard hitbox sizes
+- `docs/todo/SHORT_COMBO_SYSTEM.md` — 2-4 hit combo design
+
+**Ready to build the immovable mind.**
