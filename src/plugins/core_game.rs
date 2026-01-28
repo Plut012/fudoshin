@@ -1,13 +1,14 @@
 use bevy::prelude::*;
 use crate::components::breath::RoundEndEvent;
 use crate::events::combat_events::*;
-use crate::systems::{attack, breath, chain, collision, damage, evade, game_state, guard, health, hitstop, initiative, input, menus, momentum, movement, pressure, ui};
+use crate::systems::{attack, breath, chain, collision, damage, evade, game_state, guard, health, hitstop, initiative, input, menus, momentum, movement, pressure, ui, visual_effects};
 use game_state::GameState;
 
 /// Spawn players when entering InGame state
 fn spawn_players(mut commands: Commands) {
     use crate::components::breath::*;
     use crate::components::character::*;
+    use crate::components::combo::InputBuffer;
     use crate::components::combat::*;
     use crate::components::guard::*;
     use crate::components::health::*;
@@ -24,7 +25,7 @@ fn spawn_players(mut commands: Commands) {
     commands.insert_resource(MatchState::default());
 
     // Spawn Player 1 (red rectangle, left side)
-    commands.spawn((
+    let player1 = commands.spawn((
         Character,
         Player::One,
         CharacterState::Idle,
@@ -48,10 +49,13 @@ fn spawn_players(mut commands: Commands) {
             transform: Transform::from_xyz(-300.0, 0.0, 0.0),
             ..default()
         },
-    ));
+    )).id();
+
+    // Add InputBuffer separately to avoid bundle size limit
+    commands.entity(player1).insert(InputBuffer::default());
 
     // Spawn Player 2 (blue rectangle, right side)
-    commands.spawn((
+    let player2 = commands.spawn((
         Character,
         Player::Two,
         CharacterState::Idle,
@@ -75,7 +79,10 @@ fn spawn_players(mut commands: Commands) {
             transform: Transform::from_xyz(300.0, 0.0, 0.0),
             ..default()
         },
-    ));
+    )).id();
+
+    // Add InputBuffer separately to avoid bundle size limit
+    commands.entity(player2).insert(InputBuffer::default());
 }
 
 /// Despawn players when exiting InGame state (for rematch/reselect)
@@ -140,6 +147,8 @@ impl Plugin for CoreGamePlugin {
             .add_systems(Update, (
                 // Input and movement
                 input::update_inputs,
+                chain::record_inputs_to_buffer,     // Buffer inputs for combo execution
+                chain::age_input_buffers,           // Age buffered inputs each frame
                 movement::process_movement_input,
                 movement::handle_dash_input,        // Dash input handling
                 attack::handle_attack_input,
@@ -229,6 +238,8 @@ impl Plugin for CoreGamePlugin {
                 pressure::visualize_pressure,
                 momentum::visualize_momentum,
                 chain::visualize_chain_window,
+                visual_effects::combo_hit_flash,  // Combo hit flash escalation
+                visual_effects::debug_combo_hits, // Debug combo tracking
             ).run_if(in_state(GameState::InGame)))
             .add_systems(Update, (
                 // Debug

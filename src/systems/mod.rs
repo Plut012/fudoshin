@@ -18,3 +18,4 @@ pub mod momentum;
 pub mod movement;
 pub mod pressure;
 pub mod ui;
+pub mod visual_effects;

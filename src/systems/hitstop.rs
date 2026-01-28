@@ -61,9 +61,10 @@ pub fn process_hitstop(
     }
 }
 
-/// Visual feedback during hitstop - subtle screen shake effect
+/// Visual feedback during hitstop - escalating screen shake based on combo count
 pub fn hitstop_screen_shake(
     query: Query<&Hitstop>,
+    chain_query: Query<&crate::systems::chain::ChainState>,
     mut camera_query: Query<&mut Transform, With<Camera>>,
 ) {
     // Check if any entity is in hitstop
@@ -73,21 +74,40 @@ pub fn hitstop_screen_shake(
         .unwrap_or(0);
 
     if max_hitstop > 0 {
-        // Apply subtle shake to camera
+        // Get highest hit count across all chains for escalation
+        let max_hits = chain_query.iter()
+            .map(|c| c.hit_count)
+            .max()
+            .unwrap_or(0);
+
+        // Apply shake to camera with escalation based on combo count
         for mut transform in camera_query.iter_mut() {
-            let shake_amount = if max_hitstop >= 13 {
-                // Heavy attack hitstop - bigger shake
+            // Base shake depends on attack type (hitstop duration)
+            let base = if max_hitstop >= 13 {
+                // Heavy attack hitstop
                 3.0
             } else if max_hitstop >= 9 {
-                // Light attack hitstop - small shake
+                // Light attack hitstop
                 1.5
             } else {
                 0.0
             };
 
+            // Escalate shake based on combo hits
+            let shake_amount = match max_hits {
+                0..=1 => base,              // 1.5px or 3px
+                2 => base * 1.5,            // 2.25px or 4.5px
+                3 => base * 2.5,            // 3.75px or 7.5px
+                _ => base * 3.0,            // 4.5px or 9px
+            };
+
             // Alternating shake pattern
             let shake_dir = if (max_hitstop % 2) == 0 { 1.0 } else { -1.0 };
             transform.translation.x += shake_dir * shake_amount;
+
+            if max_hits > 1 {
+                debug!("Escalated shake: {:.1}px (hit #{})", shake_amount, max_hits);
+            }
         }
     }
 }
