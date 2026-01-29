@@ -108,6 +108,12 @@ pub struct MoveData {
     /// How many frames during recovery allow canceling
     pub cancel_window_frames: u32,
 
+    // Counter hit cancel system
+    /// Additional attack types this move can cancel into on COUNTER HIT only
+    pub counter_cancellable_into: Vec<AttackType>,
+    /// Cancel window frames on counter hit (typically longer than normal)
+    pub counter_cancel_window_frames: u32,
+
     // Stumble/juggling system
     /// Stumble property (None, Launcher, Extender, or Spike)
     pub stumble_property: StumbleProperty,
@@ -195,6 +201,8 @@ impl Movelist {
                 hitstop_on_counter: 12,
                 cancellable_into: vec![AttackType::Light, AttackType::Heavy, AttackType::Grab],
                 cancel_window_frames: 7,  // Cancel during first 7 frames of 10f recovery
+                counter_cancellable_into: vec![],  // No additional cancels on counter (already has all)
+                counter_cancel_window_frames: 8,  // Slightly extended window on counter hit
                 stumble_property: StumbleProperty::Extender(crate::components::stumble::StumbleDirection::Backward, 15),
             },
         );
@@ -219,6 +227,8 @@ impl Movelist {
                 hitstop_on_counter: 11,
                 cancellable_into: vec![AttackType::Light, AttackType::Heavy, AttackType::Grab],
                 cancel_window_frames: 7,  // Cancel during first 7 frames of 10f recovery
+                counter_cancellable_into: vec![],  // No additional cancels on counter (already has all)
+                counter_cancel_window_frames: 8,  // Slightly extended window on counter hit
                 stumble_property: StumbleProperty::Extender(crate::components::stumble::StumbleDirection::Forward, 15),
             },
         );
@@ -243,6 +253,8 @@ impl Movelist {
                 hitstop_on_counter: 11,
                 cancellable_into: vec![AttackType::Light, AttackType::Heavy],  // No Grab cancel (already low)
                 cancel_window_frames: 6,  // Slightly tighter window
+                counter_cancellable_into: vec![],  // No additional cancels on counter
+                counter_cancel_window_frames: 7,  // Slightly extended window on counter hit
                 stumble_property: StumbleProperty::Extender(crate::components::stumble::StumbleDirection::Down, 12),
             },
         );
@@ -267,6 +279,8 @@ impl Movelist {
                 hitstop_on_counter: 11,
                 cancellable_into: vec![],  // Defensive move, no cancels (reset to neutral)
                 cancel_window_frames: 0,  // No cancel window
+                counter_cancellable_into: vec![],  // Still no cancels even on counter (defensive reset)
+                counter_cancel_window_frames: 0,
                 stumble_property: StumbleProperty::None,  // Defensive reset, no stumble
             },
         );
@@ -291,8 +305,10 @@ impl Movelist {
                 hitstop_on_hit: 13,
                 hitstop_on_block: 10,
                 hitstop_on_counter: 16,
-                cancellable_into: vec![],  // Heavy attacks are committal, no cancels
+                cancellable_into: vec![],  // Heavy attacks are committal, no normal cancels
                 cancel_window_frames: 0,
+                counter_cancellable_into: vec![AttackType::Light, AttackType::Heavy],  // Can cancel to Light/Heavy on COUNTER HIT
+                counter_cancel_window_frames: 7,  // Generous 7-frame window as reward
                 stumble_property: StumbleProperty::Launcher(crate::components::stumble::StumbleDirection::Backward, 30),
             },
         );
@@ -315,8 +331,10 @@ impl Movelist {
                 hitstop_on_hit: 12,
                 hitstop_on_block: 9,
                 hitstop_on_counter: 15,
-                cancellable_into: vec![],  // Heavy attacks are committal, no cancels
+                cancellable_into: vec![],  // Heavy attacks are committal, no normal cancels
                 cancel_window_frames: 0,
+                counter_cancellable_into: vec![AttackType::Light, AttackType::Heavy],  // Can cancel to Light/Heavy on COUNTER HIT
+                counter_cancel_window_frames: 7,  // Generous 7-frame window as reward
                 stumble_property: StumbleProperty::Launcher(crate::components::stumble::StumbleDirection::Forward, 28),
             },
         );
@@ -339,8 +357,10 @@ impl Movelist {
                 hitstop_on_hit: 14,
                 hitstop_on_block: 11,
                 hitstop_on_counter: 17,
-                cancellable_into: vec![],  // Heavy attacks are committal, no cancels
+                cancellable_into: vec![],  // Heavy attacks are committal, no normal cancels
                 cancel_window_frames: 0,
+                counter_cancellable_into: vec![AttackType::Light, AttackType::Heavy],  // Can cancel to Light/Heavy on COUNTER HIT
+                counter_cancel_window_frames: 7,  // Generous 7-frame window as reward
                 stumble_property: StumbleProperty::Launcher(crate::components::stumble::StumbleDirection::Down, 25),
             },
         );
@@ -363,8 +383,10 @@ impl Movelist {
                 hitstop_on_hit: 13,
                 hitstop_on_block: 10,
                 hitstop_on_counter: 16,
-                cancellable_into: vec![],  // Heavy attacks are committal, no cancels
+                cancellable_into: vec![],  // Heavy attacks are committal, no normal cancels
                 cancel_window_frames: 0,
+                counter_cancellable_into: vec![AttackType::Light, AttackType::Heavy],  // Can cancel to Light/Heavy on COUNTER HIT
+                counter_cancel_window_frames: 7,  // Generous 7-frame window as reward
                 stumble_property: StumbleProperty::Launcher(crate::components::stumble::StumbleDirection::Backward, 32),
             },
         );
@@ -389,6 +411,8 @@ impl Movelist {
                 hitstop_on_counter: 14,
                 cancellable_into: vec![],  // Grab is not cancellable
                 cancel_window_frames: 0,
+                counter_cancellable_into: vec![],  // Still not cancellable even on counter hit
+                counter_cancel_window_frames: 0,
                 stumble_property: StumbleProperty::None,  // Grab doesn't cause stumble (different purpose)
             },
         );

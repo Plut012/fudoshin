@@ -66,6 +66,8 @@ pub struct ChainState {
     pub in_chain_window: bool,
     /// What attack types can cancel into
     pub cancellable_into: Vec<AttackType>,
+    /// Whether the current chain was started with a counter hit
+    pub is_counter_hit: bool,
 }
 
 impl ChainState {
@@ -76,6 +78,7 @@ impl ChainState {
             can_chain: false,
             in_chain_window: false,
             cancellable_into: Vec::new(),
+            is_counter_hit: false,
         }
     }
 
@@ -85,6 +88,7 @@ impl ChainState {
         self.can_chain = false;
         self.in_chain_window = false;
         self.cancellable_into.clear();
+        self.is_counter_hit = false;
     }
 
     pub fn can_continue_chain(&self) -> bool {
@@ -121,22 +125,41 @@ pub fn mark_chainable_on_hit(
                 if *phase == AttackPhase::Active {
                     // Get move data to check if it's cancellable
                     if let Some(move_data) = movelist.get_move(*attack_type, *direction) {
-                        // Check if this move has any cancel options
-                        if !move_data.cancellable_into.is_empty() && move_data.cancel_window_frames > 0 {
+                        // Determine available cancels based on hit type
+                        let mut available_cancels = move_data.cancellable_into.clone();
+                        let has_normal_cancels = !move_data.cancellable_into.is_empty() && move_data.cancel_window_frames > 0;
+                        let has_counter_cancels = event.counter_hit
+                            && !move_data.counter_cancellable_into.is_empty()
+                            && move_data.counter_cancel_window_frames > 0;
+
+                        // On counter hit, merge counter-specific cancels
+                        if event.counter_hit {
+                            for cancel_type in &move_data.counter_cancellable_into {
+                                if !available_cancels.contains(cancel_type) {
+                                    available_cancels.push(*cancel_type);
+                                }
+                            }
+                        }
+
+                        // Check if this move has any cancel options (normal or counter)
+                        if has_normal_cancels || has_counter_cancels {
                             // Hit landed! Can chain
                             chain_state.can_chain = true;
                             chain_state.in_chain_window = true;
                             chain_state.hit_count += 1;
-                            chain_state.cancellable_into = move_data.cancellable_into.clone();
+                            chain_state.cancellable_into = available_cancels.clone();
+                            chain_state.is_counter_hit = event.counter_hit;
 
-                            let cancel_list: Vec<String> = move_data.cancellable_into.iter()
+                            let cancel_list: Vec<String> = available_cancels.iter()
                                 .map(|t| format!("{:?}", t))
                                 .collect();
 
+                            let hit_type = if event.counter_hit { "COUNTER HIT" } else { "hit" };
                             info!(
-                                "{:?} {:?} hit landed! Chain enabled (chain: {}, hit: {}) - Can cancel into: {}",
+                                "{:?} {:?} {} landed! Chain enabled (chain: {}, hit: {}) - Can cancel into: {}",
                                 attack_type,
                                 direction,
+                                hit_type,
                                 chain_state.chain_count,
                                 chain_state.hit_count,
                                 cancel_list.join("/")
@@ -164,8 +187,16 @@ pub fn manage_chain_window(
                             let pre_recovery_frames = move_data.startup_frames + move_data.active_frames;
                             let recovery_elapsed = timer.elapsed.saturating_sub(pre_recovery_frames);
 
+                            // Use counter hit cancel window if this was a counter hit, otherwise use normal
+                            let cancel_window = if chain_state.is_counter_hit {
+                                // Use the larger of normal or counter cancel window
+                                move_data.counter_cancel_window_frames.max(move_data.cancel_window_frames)
+                            } else {
+                                move_data.cancel_window_frames
+                            };
+
                             // Check if within cancel window
-                            if recovery_elapsed < move_data.cancel_window_frames && chain_state.can_chain {
+                            if recovery_elapsed < cancel_window && chain_state.can_chain {
                                 chain_state.in_chain_window = true;
                             } else {
                                 chain_state.in_chain_window = false;
