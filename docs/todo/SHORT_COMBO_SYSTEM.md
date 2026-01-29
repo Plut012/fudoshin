@@ -1,5 +1,27 @@
 # Short Combo System (2-4 Hits)
 
+## ✅ IMPLEMENTATION STATUS: PHASE 1-2 COMPLETE (75%)
+
+**Date Updated:** 2026-01-29
+
+**What's Working:**
+- ✅ **Phase 1:** Core cancel system with per-move customization (COMPLETE)
+- ✅ **Phase 2:** 8-frame input buffer system (COMPLETE)
+- ✅ Cancel routes: Light → Light/Heavy/Grab
+- ✅ Visual feedback: Escalating hit flashes (white → yellow → orange → red)
+- ❌ **Phase 3:** Damage scaling (NOT IMPLEMENTED)
+- ❌ Counter hit cancel extensions (NOT IMPLEMENTED)
+- ❌ Combo counter UI (NOT IMPLEMENTED)
+- ❌ Audio feedback (NOT IMPLEMENTED)
+
+**Next Steps:**
+- Implement damage scaling (100% → 90% → 80% for hits 3+)
+- Add counter hit special cancel rules
+- Create combo counter UI display
+- Add audio pitch shifts per hit
+
+---
+
 ## Overview
 
 Implement a **chunky, satisfying short combo system** that emphasizes impact over execution. Combos should be 2-4 hits maximum, deal significant damage, and feel earned rather than memorized. This aligns with Fudoshin's core philosophy: "2-4 clean hits can kill."
@@ -44,25 +66,28 @@ Fudoshin uses a three-phase combat structure:
 - [The Design of Combos and Chains - Game Developer](https://www.gamedeveloper.com/design/the-design-of-combos-and-chains)
 - [What's the Point of Combos? - CritPoints](https://critpoints.net/2019/11/11/whats-the-point-of-combos-in-fighting-games/)
 
-## Current State
+## Current State (Updated 2026-01-29)
 
-**Existing Chain System:**
-- Light → Light chain (cancels on hit)
-- 2 hits total
-- Simple and functional
+**✅ Implemented Chain System:**
+- ✅ Light → Light/Heavy/Grab cancels (on hit only)
+- ✅ 8-frame input buffer for lenient execution
+- ✅ Per-move cancel customization (data-driven)
+- ✅ Variable cancel windows per move (6-7 frames)
+- ✅ Visual feedback with escalating hit flashes
+- ✅ Chain state tracking (hit count, chain count)
 
-**What's Missing:**
-- No cancel windows beyond Light → Light
-- No Heavy attack confirms
-- No counter hit extensions
-- No link timing (only chains)
-- No combo variety/routes
-- Damage per combo seems low for "lethal brevity" philosophy
+**❌ Still Missing:**
+- ❌ Damage scaling for combos
+- ❌ Counter hit cancel extensions
+- ❌ Combo counter UI display
+- ❌ Audio pitch shifts
 
-**Current Damage (estimated):**
+**Current Damage (unscaled):**
 - Light attack: ~8 damage
 - Heavy attack: ~15 damage
-- Light → Light: ~16 damage (too low for a full combo)
+- Light → Light: ~16 damage
+- Light → Heavy: ~23 damage
+- Light → Light → Heavy: ~31 damage (needs scaling!)
 
 ## Goal
 

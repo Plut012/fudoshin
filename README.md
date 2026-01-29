@@ -2,12 +2,14 @@
 
 A minimalist fighting game where victory is earned through superior perception, not execution.
 
-## Current Status: Phase 3 - Initiative & Pressure ✅
+## Current Status: Phase 5 - Game Feel Foundation ✅ (COMPLETE!)
 
 **Phase 0 Complete:** ✅ Project Setup
 **Phase 1 Complete:** ✅ Movement Foundation
 **Phase 2 Complete:** ✅ Core Combat Triangle (Attacks, Block, Parry, Evade)
 **Phase 3 Complete:** ✅ Initiative & Pressure (Frame Advantage, Chains, Counter Hits, Momentum)
+**Phase 4 Complete:** ✅ Health States & Breath System
+**Phase 5 Complete:** ✅ Game Feel (Hitstop ✅, Hitboxes ✅, Combos ✅, Juggling ✅)
 
 **What's Working:**
 - Full movement system with stage boundaries
@@ -15,13 +17,18 @@ A minimalist fighting game where victory is earned through superior perception, 
 - Block system with guard meter and guard breaks
 - 6-frame parry window that staggers attackers
 - Evade with i-frames and directional movement
-- **Hitstop/freeze frames for chunky, satisfying hits**
+- **Hitstop/freeze frames for chunky, satisfying hits (9-13 frames)**
 - **Generous hitboxes matching Street Fighter proportions (1.5-2.5x character width)**
 - Frame advantage tracking (+/- initiative)
 - Pressure state with movement/attack bonuses
-- Chain attacks (Light → Light cancels on hit)
+- **Combo system: Light → Light/Heavy/Grab cancels with 8-frame input buffer**
+- **Per-move cancel customization (data-driven combo routes)**
+- **Stumble/Juggling system: Launchers, Extenders, Tech window, Wall bounce, Spike finishers**
 - Counter hit system (+10f hitstun, gold flash)
 - Momentum tracking with win streak bonuses
+- Health states (Whole → Cut → Wounded → Broken)
+- Breath system (3 stocks per match)
+- Round structure with timer and victory conditions
 
 ## Quick Start
 
@@ -69,6 +76,10 @@ The game uses color-coded visual feedback to communicate game state:
 - **Semi-transparent** - Evade i-frames active
 - **Red hitboxes** - Active attack hitboxes (press F1 to see)
 - **Green hurtboxes** - Vulnerable areas (press F1 to see)
+- **Directional arrows** - Stumble direction (yellow = can tech, red = cannot tech)
+- **Dark red flash** - Successful tech escape
+- **Orange impact circles** - Wall bounce
+- **White/red shockwave** - Spike finisher landed
 
 ## Architecture
 
@@ -79,13 +90,28 @@ The game uses color-coded visual feedback to communicate game state:
 
 See `docs/todo/PROGRESS.md` for detailed implementation status and `docs/todo/PHASE3_PLAN.md` for Phase 3 details.
 
-## Next Steps: Phase 4
+## Next Steps: Phase 6 (Combat Framework) or Polish
 
-The next phase will add:
-- **Health States** - Whole → Cut → Wounded → Broken progression
-- **Breath System** - 3 stocks per match
-- **Win Conditions** - Decisive Blow and round victory
-- **Actual Damage** - Integrate momentum bonuses with health system
+**Phase 5 Complete!** The stumble/juggling system is fully implemented with:
+- Launcher moves that initiate stumble state
+- 8-frame tech window for defender escape
+- Extender moves with diminishing returns
+- Wall bounce mechanics for stage control
+- Spike finishers (Neutral Heavy & Down Heavy on stumbling opponents)
+
+**Option A - Polish Phase 5:**
+- Damage scaling for combos (prevent infinites)
+- Counter hit cancel extensions
+- Combo counter UI display
+- Audio feedback for hits
+
+**Option B - Start Phase 6 (Framework):**
+- Stagger method variety (Guard Break, Counter Hit, Command Grab, Armor Trade)
+- Finish type system (Standard, Execution Combo, Grapple, Counter)
+- Character mechanic plugin system
+- Data-driven character loading from RON files
+
+See `docs/mvp_plan.md` and `docs/todo/PROGRESS.md` for details.
 
 ## Development
 

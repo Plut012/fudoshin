@@ -17,5 +17,6 @@ pub mod menus;
 pub mod momentum;
 pub mod movement;
 pub mod pressure;
+pub mod stumble;
 pub mod ui;
 pub mod visual_effects;

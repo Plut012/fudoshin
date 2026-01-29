@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::components::stumble::StumbleDirection;
 
 /// Properties that modify attack behavior
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -9,6 +10,25 @@ pub enum AttackProperty {
     Unblockable,
     /// Can chain into another attack
     Chainable,
+}
+
+/// Stumble/juggling properties for moves
+#[derive(Debug, Clone, PartialEq)]
+pub enum StumbleProperty {
+    /// No stumble effect
+    None,
+    /// Starts a stumble (direction, duration in frames)
+    Launcher(StumbleDirection, u32),
+    /// Extends existing stumble (direction, added frames)
+    Extender(StumbleDirection, u32),
+    /// Spike finisher - ends stumble with hard knockdown
+    Spike,
+}
+
+impl Default for StumbleProperty {
+    fn default() -> Self {
+        StumbleProperty::None
+    }
 }
 
 /// Offensive hitbox - damages opponents when active

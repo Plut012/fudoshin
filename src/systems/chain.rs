@@ -107,7 +107,7 @@ impl Default for ChainState {
 /// Mark attacks as chainable when they hit
 pub fn mark_chainable_on_hit(
     mut hit_events: EventReader<HitEvent>,
-    mut query: Query<(&mut ChainState, &CharacterState)>,
+    mut query: Query<(&mut ChainState, &CharacterState, &crate::components::movelist::Movelist)>,
 ) {
     for event in hit_events.read() {
         // Only unblocked hits can be chained
@@ -115,27 +115,34 @@ pub fn mark_chainable_on_hit(
             continue;
         }
 
-        // Check if attacker is in a Light attack
-        if let Ok((mut chain_state, state)) = query.get_mut(event.attacker) {
-            if let CharacterState::Attacking { attack_type, phase, .. } = state {
-                if *attack_type == AttackType::Light && *phase == AttackPhase::Active {
-                    // Hit landed! Can chain
-                    chain_state.can_chain = true;
-                    chain_state.in_chain_window = true;
-                    chain_state.hit_count += 1;
+        // Check if attacker can chain
+        if let Ok((mut chain_state, state, movelist)) = query.get_mut(event.attacker) {
+            if let CharacterState::Attacking { attack_type, direction, phase } = state {
+                if *phase == AttackPhase::Active {
+                    // Get move data to check if it's cancellable
+                    if let Some(move_data) = movelist.get_move(*attack_type, *direction) {
+                        // Check if this move has any cancel options
+                        if !move_data.cancellable_into.is_empty() && move_data.cancel_window_frames > 0 {
+                            // Hit landed! Can chain
+                            chain_state.can_chain = true;
+                            chain_state.in_chain_window = true;
+                            chain_state.hit_count += 1;
+                            chain_state.cancellable_into = move_data.cancellable_into.clone();
 
-                    // Light hit: Can cancel into Light, Heavy, or Grab
-                    chain_state.cancellable_into = vec![
-                        AttackType::Light,
-                        AttackType::Heavy,
-                        AttackType::Grab,
-                    ];
+                            let cancel_list: Vec<String> = move_data.cancellable_into.iter()
+                                .map(|t| format!("{:?}", t))
+                                .collect();
 
-                    info!(
-                        "Light hit landed! Chain enabled (chain: {}, hit: {}) - Can cancel into: Light/Heavy/Grab",
-                        chain_state.chain_count,
-                        chain_state.hit_count
-                    );
+                            info!(
+                                "{:?} {:?} hit landed! Chain enabled (chain: {}, hit: {}) - Can cancel into: {}",
+                                attack_type,
+                                direction,
+                                chain_state.chain_count,
+                                chain_state.hit_count,
+                                cancel_list.join("/")
+                            );
+                        }
+                    }
                 }
             }
         }
@@ -144,23 +151,31 @@ pub fn mark_chainable_on_hit(
 
 /// Open chain window during recovery phase
 pub fn manage_chain_window(
-    mut query: Query<(&mut ChainState, &CharacterState, Option<&StateTimer>)>,
+    mut query: Query<(&mut ChainState, &CharacterState, Option<&StateTimer>, &crate::components::movelist::Movelist)>,
 ) {
-    for (mut chain_state, state, timer) in query.iter_mut() {
+    for (mut chain_state, state, timer, movelist) in query.iter_mut() {
         match state {
-            CharacterState::Attacking { attack_type, phase, .. } => {
-                if *attack_type == AttackType::Light && *phase == AttackPhase::Recovery {
-                    // In recovery phase - check if in chain window (frames 0-7 of 10f recovery)
-                    if let Some(timer) = timer {
-                        let recovery_elapsed = timer.elapsed.saturating_sub(8); // 6f startup + 2f active = 8f before recovery
-                        if recovery_elapsed < 7 && chain_state.can_chain {
-                            chain_state.in_chain_window = true;
-                        } else {
-                            chain_state.in_chain_window = false;
+            CharacterState::Attacking { attack_type, direction, phase } => {
+                if *phase == AttackPhase::Recovery {
+                    // Get move data to check cancel window
+                    if let Some(move_data) = movelist.get_move(*attack_type, *direction) {
+                        if let Some(timer) = timer {
+                            // Calculate elapsed frames in recovery phase
+                            let pre_recovery_frames = move_data.startup_frames + move_data.active_frames;
+                            let recovery_elapsed = timer.elapsed.saturating_sub(pre_recovery_frames);
+
+                            // Check if within cancel window
+                            if recovery_elapsed < move_data.cancel_window_frames && chain_state.can_chain {
+                                chain_state.in_chain_window = true;
+                            } else {
+                                chain_state.in_chain_window = false;
+                            }
                         }
+                    } else {
+                        chain_state.in_chain_window = false;
                     }
                 } else {
-                    // Not in Light recovery
+                    // Not in recovery phase
                     chain_state.in_chain_window = false;
                 }
             }

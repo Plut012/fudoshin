@@ -217,37 +217,76 @@ cargo run
 
 ---
 
-## 🎯 Next: Phase 4 - Health States & Breath System
+## ✅ Phase 4: Health States & Breath System (COMPLETE)
 
-**What it adds:**
-1. **Health System**:
-   - Whole → Cut → Wounded → Broken states
-   - State-based modifiers (speed, frame advantage, parry window)
-   - Numerical damage with momentum bonuses
-   - Chip damage on blocked attacks
-2. **Breath System**:
-   - 3 breaths (stocks) per match
-   - Round structure with respawns
-   - Round timer (60 seconds)
-3. **Decisive Blow**:
-   - Finishing move against Broken opponents
-   - Instant breath loss on Heavy/Grab connect
-   - Special visual effects
-4. **Win Conditions**:
-   - Breath depletion (primary)
-   - Timeout (discouraged)
-   - Match victory screen
-5. **UI Elements**:
-   - Breath indicators
-   - Health bars with color coding
-   - Round timer
-   - Danger indicators
-
-**After Phase 4:** This completes the MVP! Game will be fully playable with complete match structure.
-
-See `docs/todo/PHASE4_PLAN.md` for detailed implementation plan.
+**What's Working:**
+- ✅ Health system (Whole → Cut → Wounded → Broken states)
+- ✅ State-based modifiers (speed, frame advantage, parry window)
+- ✅ Breath system (3 stocks per match)
+- ✅ Round structure with respawns
+- ✅ Round timer and countdown
+- ✅ Decisive Blow conditions
+- ✅ Victory conditions and UI
+- ✅ Match victory screen
 
 ---
 
-Last updated: Phase 3 complete, Phase 4 planned!
-Status: Full initiative, pressure, chains, counter hits, and momentum systems working. Ready to implement health and breath systems.
+## 🎯 Current: Phase 5 - Game Feel Foundation (IN PROGRESS)
+
+**Phase 5 Status:** ~85% Complete
+
+### 5.1 Hitstop System ✅ COMPLETE
+- ✅ 9-13 frame freezes on hit
+- ✅ Screen shake visual feedback
+- ✅ Automatic application on hit/block/counter
+- ✅ Integration with all combat systems
+
+### 5.2 Hitbox Sizing ✅ COMPLETE
+- ✅ All hitboxes increased ~50% to match Street Fighter standards
+- ✅ Light attacks: 1.4-1.6x character width
+- ✅ Heavy attacks: 2.0-2.5x character width
+- ✅ Grab: 1.5x character width (very generous)
+
+### 5.3 Combat Flow & Juggling ⚠️ IN PROGRESS
+**Implemented:**
+- ✅ Core cancel system (Light → Light/Heavy/Grab)
+- ✅ 8-frame input buffer for lenient execution
+- ✅ Per-move cancel customization - Data-driven cancel rules
+- ✅ Variable cancel windows per move
+- ✅ Visual feedback (escalating hit flashes)
+- ✅ Chain state tracking
+
+**New Direction: Stumble/Juggling System** ✅ COMPLETE
+- ✅ Smash Bros-inspired juggling mechanic
+- ✅ Launcher/Extender move properties
+- ✅ 8-frame tech window for defender escape
+- ✅ Direction-based stumble control
+- ✅ Wall bounce mechanics
+- ✅ Spike finishers (Neutral Heavy & Down Heavy on stumbling opponents)
+
+See `docs/todo/STUMBLE_JUGGLING_SYSTEM.md` for full design and implementation plan.
+
+---
+
+## 🎉 Phase 5.3: Stumble/Juggling System COMPLETE!
+
+**All 4 Phases Implemented:**
+- ✅ **Phase 1:** Basic stumble state with launcher moves
+- ✅ **Phase 2:** Tech system with 8-frame escape window
+- ✅ **Phase 3:** Wall bounce mechanics with direction reversal
+- ✅ **Phase 4:** Spike finishers (Neutral Heavy & Down Heavy)
+
+**What's Working:**
+- Heavy attacks launch opponents into stumble state
+- Defender can tech out during 8-frame window (frame 5-13)
+- Light attacks extend stumble with diminishing returns
+- Wall bounces reverse direction and add +20f vulnerability
+- Neutral Heavy and Down Heavy act as spike finishers when hitting stumbling opponents
+- Complete visual feedback system (arrows, flashes, impact effects)
+
+**Next Steps:** Phase 5 complete! Ready for Phase 6 (Combat Framework) or polish phase.
+
+---
+
+Last updated: 2026-01-29
+Status: Phase 5 nearly complete! Hitstop and hitboxes done. Combo system functional with per-move cancel customization. Game feel is solid - ready for framework expansion or final polish.

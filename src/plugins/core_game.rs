@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::components::breath::RoundEndEvent;
 use crate::events::combat_events::*;
-use crate::systems::{attack, breath, chain, collision, damage, evade, game_state, guard, health, hitstop, initiative, input, menus, momentum, movement, pressure, ui, visual_effects};
+use crate::systems::{attack, breath, chain, collision, damage, evade, game_state, guard, health, hitstop, initiative, input, menus, momentum, movement, pressure, stumble, ui, visual_effects};
 use game_state::GameState;
 
 /// Spawn players when entering InGame state
@@ -171,6 +171,8 @@ impl Plugin for CoreGamePlugin {
                 initiative::tick_initiative,
                 momentum::tick_momentum,
                 chain::manage_chain_window,
+                stumble::handle_tech_input,        // Phase 5.3: Handle tech during stumble
+                stumble::process_stumble,          // Phase 5.3: Tick stumble duration
                 attack::activate_hitboxes,
                 movement::initiate_attack_movement, // Phase 4.5: Start attack movement
                 movement::cleanup_attack_movement,  // Phase 4.5: Clean up finished movement
@@ -181,14 +183,18 @@ impl Plugin for CoreGamePlugin {
                 movement::apply_attack_movement,    // Phase 4.5: Apply attack-based movement
                 movement::apply_velocity,
                 movement::clamp_to_stage,
+                stumble::detect_wall_bounce,        // Phase 5.3: Wall bounce detection
                 collision::detect_hits,
             ).chain().run_if(in_state(GameState::InGame)))
             .add_systems(Update, (
                 // Reactions - Part 1
-                hitstop::apply_hitstop_on_hit,   // Apply hitstop when hits connect
+                hitstop::apply_hitstop_on_hit,          // Apply hitstop when hits connect
+                stumble::apply_stumble_on_hit,          // Phase 5.3: Apply stumble from launchers
+                stumble::extend_stumble_on_hit,         // Phase 5.3: Extend stumble with extenders
+                stumble::handle_spike_finisher,         // Phase 5.3 Phase 4: Spike finishers on stumbling opponents
                 guard::check_parry_success,
                 damage::apply_hit_reactions,
-                health::apply_health_damage,  // Phase 4: Apply damage to health
+                health::apply_health_damage,            // Phase 4: Apply damage to health
                 health::apply_movement_speed_modifier,  // Phase 4: Health state movement penalty
                 health::apply_frame_advantage_penalty,  // Phase 4: Health state frame penalty
                 health::restrict_pressure_by_health,    // Phase 4: Health state pressure cap
@@ -238,6 +244,11 @@ impl Plugin for CoreGamePlugin {
                 pressure::visualize_pressure,
                 momentum::visualize_momentum,
                 chain::visualize_chain_window,
+                stumble::visualize_stumble_direction,  // Phase 5.3: Stumble direction arrow
+                stumble::visualize_stumble_state,      // Phase 5.3: Stumble visual feedback
+                stumble::tech_flash_effect,            // Phase 5.3: Tech flash visual
+                stumble::wall_bounce_visual,           // Phase 5.3: Wall bounce impact effect
+                stumble::spike_finisher_visual,        // Phase 5.3 Phase 4: Spike finisher impact effect
                 visual_effects::combo_hit_flash,  // Combo hit flash escalation
                 visual_effects::debug_combo_hits, // Debug combo tracking
             ).run_if(in_state(GameState::InGame)))
@@ -253,6 +264,7 @@ impl Plugin for CoreGamePlugin {
                 pressure::debug_pressure,
                 momentum::debug_momentum,
                 chain::debug_chain_state,
+                stumble::debug_stumble_state,   // Phase 5.3: Debug stumble
                 collision::debug_draw_boxes,
             ).run_if(in_state(GameState::InGame)));
     }

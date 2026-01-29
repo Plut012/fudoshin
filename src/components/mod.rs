@@ -11,6 +11,7 @@ pub mod hitstop;
 pub mod initiative;
 pub mod movelist;
 pub mod state;
+pub mod stumble;
 
 // Re-export commonly used types
 pub use combo::InputBuffer;
